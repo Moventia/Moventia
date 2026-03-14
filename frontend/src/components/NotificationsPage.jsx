@@ -23,11 +23,11 @@ export function NotificationsPage({ onNavigate }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Notifications</h1>
+          <h1 className="text-4xl font-bold mb-2 text-foreground">Notifications</h1>
           <p className="text-muted-foreground">Stay updated with your activity</p>
         </div>
 
@@ -43,8 +43,8 @@ export function NotificationsPage({ onNavigate }) {
           {mockNotifications.map((notification) => (
             <Card 
               key={notification.id} 
-              className={`cursor-pointer hover:shadow-md transition-shadow ${
-                !notification.read ? 'border-l-4 border-l-primary bg-blue-50/50' : ''
+              className={`cursor-pointer hover:shadow-md hover:shadow-primary/5 transition-shadow ${
+                !notification.read ? 'border-l-4 border-l-primary bg-primary/5' : ''
               }`}
             >
               <CardContent className="p-4">
@@ -56,7 +56,7 @@ export function NotificationsPage({ onNavigate }) {
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm">
-                        <span className="font-semibold">{notification.fromUser}</span>{' '}
+                        <span className="font-semibold text-foreground">{notification.fromUser}</span>{' '}
                         <span className="text-muted-foreground">{notification.message}</span>
                       </p>
                       <div className="flex-shrink-0">

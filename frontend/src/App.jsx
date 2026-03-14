@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
 import { HomePage } from './components/HomePage';
 import { BrowseMovies } from './components/BrowseMovies';
@@ -12,64 +13,126 @@ import { FollowersPage } from './components/FollowersPage';
 import { Chatbot } from './components/Chatbot';
 import { mockNotifications } from './lib/mockData';
 
+const API_URL = 'http://localhost:8080/api';
+
+// Simple protected route wrapper
+function ProtectedRoute({ isLoggedIn, children }) {
+  const location = useLocation();
+  if (!isLoggedIn) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return children;
+}
+
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentPage, setCurrentPage] = useState('login');
-  const [pageData, setPageData] = useState({});
-
+  const [navUser, setNavUser] = useState(null);
+  // Just for global notification count badge
   const unreadNotifications = mockNotifications.filter(n => !n.read).length;
 
-  const handleNavigate = (page, data) => {
-    setCurrentPage(page);
-    setPageData(data || {});
-    window.scrollTo(0, 0);
+  // ── Fetch user profile from API ──────────────────────────────────────
+  const fetchNavUser = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/profile/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNavUser(data);
+      }
+    } catch {
+      // silent
+    }
   };
+
+  // ── On mount, restore session ─────────────────────────────────────────
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+      fetchNavUser();
+    }
+  }, []);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
-    setCurrentPage('home');
+    fetchNavUser();
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
-    setCurrentPage('login');
+    setNavUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
 
-  if (!isLoggedIn) {
-    return <LoginPage onLogin={handleLogin} />;
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navigation
-        currentPage={currentPage}
-        onNavigate={handleNavigate}
         isLoggedIn={isLoggedIn}
         onLogout={handleLogout}
         notificationCount={unreadNotifications}
+        user={navUser}
       />
 
-      {currentPage === 'home' && <HomePage onNavigate={handleNavigate} />}
-      {currentPage === 'browse' && <BrowseMovies onNavigate={handleNavigate} />}
-      {currentPage === 'movie' && pageData.id && (
-        <MovieDetail movieId={pageData.id} onNavigate={handleNavigate} />
-      )}
-      {currentPage === 'profile' && <UserProfile onNavigate={handleNavigate} />}
-      {currentPage === 'user-profile' && (
-        <UserProfile userId={pageData.userId} onNavigate={handleNavigate} />
-      )}
-      {currentPage === 'feed' && <FeedPage onNavigate={handleNavigate} />}
-      {currentPage === 'notifications' && (
-        <NotificationsPage onNavigate={handleNavigate} />
-      )}
-      {currentPage === 'write-review' && (
-        <WriteReview movieId={pageData.movieId} onNavigate={handleNavigate} />
-      )}
-      {(currentPage === 'followers' || currentPage === 'following') && (
-        <FollowersPage userId={pageData.userId} onNavigate={handleNavigate} />
-      )}
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/browse" element={<BrowseMovies />} />
+        <Route path="/movie/:id" element={<MovieDetail isLoggedIn={isLoggedIn} />} />
+        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
 
-      <Chatbot />
+        {/* Protected Routes */}
+        <Route path="/profile" element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <UserProfile onProfileUpdate={fetchNavUser} />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/profile/:userId" element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <UserProfile />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/profile/:userId/followers" element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <FollowersPage tab="followers" />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/profile/:userId/following" element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <FollowersPage tab="following" />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/feed" element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <FeedPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/notifications" element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <NotificationsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/movie/:id/review" element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <WriteReview />
+          </ProtectedRoute>
+        } />
+
+        {/* Catch-all route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {/* Chatbot overlay */}
+      {isLoggedIn && <Chatbot />}
     </div>
   );
 }

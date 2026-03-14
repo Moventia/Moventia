@@ -6,21 +6,24 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Separator } from './ui/separator';
 import { mockMovies, mockReviews } from '../lib/mockData';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useParams } from 'react-router-dom';
+import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
 
-
-
-export function MovieDetail({ movieId, onNavigate } ) {
+export function MovieDetail({ isLoggedIn } ) {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const movieId = parseInt(id, 10);
   const movie = mockMovies.find((m) => m.id === movieId);
   const movieReviews = mockReviews.filter((r) => r.movieId === movieId);
 
   if (!movie) {
-    return <div className="container mx-auto px-4 py-8">Movie not found</div>;
+    return <div className="container mx-auto px-4 py-8 text-foreground">Movie not found</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative h-[400px] bg-gradient-to-t from-black to-transparent">
+      <div className="relative h-[400px] bg-gradient-to-t from-background to-transparent">
         <div className="absolute inset-0">
           <ImageWithFallback
             src={movie.poster}
@@ -37,10 +40,10 @@ export function MovieDetail({ movieId, onNavigate } ) {
                 className="w-full aspect-[2/3] object-cover"
               />
             </Card>
-            <div className="text-white pb-4">
+            <div className="text-foreground pb-4">
               <h1 className="text-5xl font-bold mb-3">{movie.title}</h1>
               <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center gap-1 bg-yellow-500 text-black px-3 py-1 rounded">
+                <div className="flex items-center gap-1 bg-primary text-primary-foreground px-3 py-1 rounded">
                   <Star className="h-5 w-5 fill-current" />
                   <span className="font-bold text-lg">{movie.rating}</span>
                 </div>
@@ -55,7 +58,7 @@ export function MovieDetail({ movieId, onNavigate } ) {
               </div>
               <div className="flex gap-2 mb-4">
                 {movie.genre.map((g) => (
-                  <Badge key={g} variant="secondary" className="bg-white/20 text-white border-0">
+                  <Badge key={g} variant="secondary" className="bg-foreground/10 text-foreground border-0">
                     {g}
                   </Badge>
                 ))}
@@ -63,15 +66,15 @@ export function MovieDetail({ movieId, onNavigate } ) {
               <div className="flex gap-2">
                 <Button 
                   size="lg"
-                  onClick={() => onNavigate('write-review', { movieId: movie.id })}
+                  onClick={() => navigate(`/movie/${movie.id}/review`)}
                 >
                   Write Review
                 </Button>
-                <Button size="lg" variant="outline" className="bg-white/10 border-white text-white hover:bg-white/20">
+                <Button size="lg" variant="outline" className="bg-foreground/5 border-foreground/20 text-foreground hover:bg-foreground/10">
                   <Heart className="h-4 w-4 mr-2" />
                   Add to Favorites
                 </Button>
-                <Button size="lg" variant="outline" className="bg-white/10 border-white text-white hover:bg-white/20">
+                <Button size="lg" variant="outline" className="bg-foreground/5 border-foreground/20 text-foreground hover:bg-foreground/10">
                   <Share2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -87,7 +90,7 @@ export function MovieDetail({ movieId, onNavigate } ) {
             {/* Synopsis */}
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-2xl font-bold mb-4">Synopsis</h2>
+                <h2 className="text-2xl font-bold mb-4 text-foreground">Synopsis</h2>
                 <p className="text-muted-foreground leading-relaxed">{movie.synopsis}</p>
               </CardContent>
             </Card>
@@ -96,8 +99,8 @@ export function MovieDetail({ movieId, onNavigate } ) {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold">Reviews ({movie.reviewCount})</h2>
-                  <Button onClick={() => onNavigate('write-review', { movieId: movie.id })}>
+                  <h2 className="text-2xl font-bold text-foreground">Reviews ({movie.reviewCount})</h2>
+                  <Button onClick={() => navigate(`/movie/${movie.id}/review`)}>
                     Write Review
                   </Button>
                 </div>
@@ -109,7 +112,7 @@ export function MovieDetail({ movieId, onNavigate } ) {
                         <div className="flex items-start gap-3 mb-3">
                           <Avatar 
                             className="cursor-pointer"
-                            onClick={() => onNavigate('user-profile', { userId: review.userId })}
+                            onClick={() => navigate(`/profile/${review.userId}`)}
                           >
                             <AvatarImage src={review.userAvatar} alt={review.username} />
                             <AvatarFallback>{review.username[0]}</AvatarFallback>
@@ -117,8 +120,8 @@ export function MovieDetail({ movieId, onNavigate } ) {
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
                               <span 
-                                className="font-semibold cursor-pointer hover:underline"
-                                onClick={() => onNavigate('user-profile', { userId: review.userId })}
+                                className="font-semibold cursor-pointer hover:underline text-foreground"
+                                onClick={() => navigate(`/profile/${review.userId}`)}
                               >
                                 {review.username}
                               </span>
@@ -129,14 +132,14 @@ export function MovieDetail({ movieId, onNavigate } ) {
                                     className={`h-4 w-4 ${
                                       i < review.rating
                                         ? 'fill-yellow-400 text-yellow-400'
-                                        : 'text-gray-300'
+                                        : 'text-muted-foreground/30'
                                     }`}
                                   />
                                 ))}
                               </div>
                             </div>
                             <p className="text-sm text-muted-foreground mb-2">{review.createdAt}</p>
-                            <h3 className="font-semibold mb-2">{review.title}</h3>
+                            <h3 className="font-semibold mb-2 text-foreground">{review.title}</h3>
                             <p className="text-muted-foreground">{review.content}</p>
                             <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
                               <Button variant="ghost" size="sm" className="h-8 px-2">
@@ -154,7 +157,7 @@ export function MovieDetail({ movieId, onNavigate } ) {
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground mb-4">No reviews yet. Be the first to review!</p>
-                    <Button onClick={() => onNavigate('write-review', { movieId: movie.id })}>
+                    <Button onClick={() => navigate(`/movie/${movie.id}/review`)}>
                       Write the First Review
                     </Button>
                   </div>
@@ -168,30 +171,30 @@ export function MovieDetail({ movieId, onNavigate } ) {
             {/* Movie Info */}
             <Card>
               <CardContent className="p-6">
-                <h3 className="font-bold mb-4">Movie Information</h3>
+                <h3 className="font-bold mb-4 text-foreground">Movie Information</h3>
                 <div className="space-y-3">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Director</p>
-                    <p className="font-semibold">{movie.director}</p>
+                    <p className="font-semibold text-foreground">{movie.director}</p>
                   </div>
                   <Separator />
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Cast</p>
                     <div className="space-y-1">
                       {movie.cast.map((actor) => (
-                        <p key={actor} className="font-semibold">{actor}</p>
+                        <p key={actor} className="font-semibold text-foreground">{actor}</p>
                       ))}
                     </div>
                   </div>
                   <Separator />
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Release Year</p>
-                    <p className="font-semibold">{movie.year}</p>
+                    <p className="font-semibold text-foreground">{movie.year}</p>
                   </div>
                   <Separator />
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Duration</p>
-                    <p className="font-semibold">{movie.duration}</p>
+                    <p className="font-semibold text-foreground">{movie.duration}</p>
                   </div>
                 </div>
               </CardContent>
@@ -200,18 +203,18 @@ export function MovieDetail({ movieId, onNavigate } ) {
             {/* Stats */}
             <Card>
               <CardContent className="p-6">
-                <h3 className="font-bold mb-4">Statistics</h3>
+                <h3 className="font-bold mb-4 text-foreground">Statistics</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Average Rating</span>
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-bold">{movie.rating}</span>
+                      <span className="font-bold text-foreground">{movie.rating}</span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Total Reviews</span>
-                    <span className="font-bold">{movie.reviewCount}</span>
+                    <span className="font-bold text-foreground">{movie.reviewCount}</span>
                   </div>
                 </div>
               </CardContent>

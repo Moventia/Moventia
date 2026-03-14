@@ -4,37 +4,37 @@ import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { mockReviews } from '../lib/mockData';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
 
-
-
-export function FeedPage({ onNavigate }) {
+export function FeedPage() {
+  const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Your Feed</h1>
+          <h1 className="text-4xl font-bold mb-2 text-foreground">Your Feed</h1>
           <p className="text-muted-foreground">Reviews from people you follow</p>
         </div>
 
         {/* Feed Items */}
         <div className="space-y-4">
           {mockReviews.map((review) => (
-            <Card key={review.id} className="hover:shadow-md transition-shadow">
+            <Card key={review.id} className="hover:shadow-md hover:shadow-primary/5 transition-shadow hover:border-primary/30">
               <CardContent className="p-6">
                 {/* User Info */}
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar 
                     className="cursor-pointer"
-                    onClick={() => onNavigate('user-profile', { userId: review.userId })}
+                    onClick={() => navigate(`/profile/${review.userId}`)}
                   >
                     <AvatarImage src={review.userAvatar} alt={review.username} />
                     <AvatarFallback>{review.username[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <p 
-                      className="font-semibold cursor-pointer hover:underline"
-                      onClick={() => onNavigate('user-profile', { userId: review.userId })}
+                      className="font-semibold cursor-pointer hover:underline text-foreground"
+                      onClick={() => navigate(`/profile/${review.userId}`)}
                     >
                       {review.username}
                     </p>
@@ -50,12 +50,12 @@ export function FeedPage({ onNavigate }) {
                     src={review.moviePoster}
                     alt={review.movieTitle}
                     className="w-24 h-36 object-cover rounded cursor-pointer"
-                    onClick={() => onNavigate('movie', { id: review.movieId })}
+                    onClick={() => navigate(`/movie/${review.movieId}`)}
                   />
                   <div className="flex-1">
                     <h3 
-                      className="text-xl font-bold mb-2 cursor-pointer hover:text-primary"
-                      onClick={() => onNavigate('movie', { id: review.movieId })}
+                      className="text-xl font-bold mb-2 cursor-pointer hover:text-primary text-foreground"
+                      onClick={() => navigate(`/movie/${review.movieId}`)}
                     >
                       {review.movieTitle}
                     </h3>
@@ -66,18 +66,18 @@ export function FeedPage({ onNavigate }) {
                           className={`h-4 w-4 ${
                             i < review.rating
                               ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-300'
+                              : 'text-muted-foreground/30'
                           }`}
                         />
                       ))}
                     </div>
-                    <p className="font-semibold mb-2">{review.title}</p>
+                    <p className="font-semibold mb-2 text-foreground">{review.title}</p>
                     <p className="text-muted-foreground text-sm">{review.content}</p>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 mt-4 pt-4 border-t">
+                <div className="flex items-center gap-1 mt-4 pt-4 border-t border-border">
                   <Button 
                     variant="ghost" 
                     size="sm"

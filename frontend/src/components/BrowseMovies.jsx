@@ -13,8 +13,10 @@ import {
 } from './ui/select';
 import { mockMovies } from '../lib/mockData';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
 
-export function BrowseMovies({ onNavigate }) {
+export function BrowseMovies() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('all');
   const [sortBy, setSortBy] = useState('rating');
@@ -50,11 +52,11 @@ export function BrowseMovies({ onNavigate }) {
     });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Browse Movies</h1>
+          <h1 className="text-4xl font-bold mb-2 text-foreground">Browse Movies</h1>
           <p className="text-muted-foreground">
             Discover your next favorite film
           </p>
@@ -118,8 +120,8 @@ export function BrowseMovies({ onNavigate }) {
           {filteredMovies.map((movie) => (
             <Card
               key={movie.id}
-              className="overflow-hidden cursor-pointer hover:shadow-lg transition-all hover:scale-105"
-              onClick={() => onNavigate('movie', { id: movie.id })}
+              className="overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-primary/5 transition-all hover:scale-105 hover:border-primary/30"
+              onClick={() => navigate(`/movie/${movie.id}`)}
             >
               <div className="aspect-[2/3] relative">
                 <ImageWithFallback
@@ -136,7 +138,7 @@ export function BrowseMovies({ onNavigate }) {
               </div>
 
               <CardContent className="p-4">
-                <h3 className="font-semibold mb-1 line-clamp-1">
+                <h3 className="font-semibold mb-1 line-clamp-1 text-foreground">
                   {movie.title}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-2">

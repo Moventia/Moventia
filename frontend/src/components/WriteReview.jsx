@@ -8,8 +8,14 @@ import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { mockMovies } from '../lib/mockData';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { useParams } from 'react-router-dom';
+import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
 
-export function WriteReview({ movieId, onNavigate }) {
+export function WriteReview() {
+  const { movieId: idParam } = useParams();
+  const navigate = useNavigate();
+  const movieId = parseInt(idParam, 10);
+
   const movie = movieId
     ? mockMovies.find((m) => m.id === movieId)
     : null;
@@ -23,18 +29,18 @@ export function WriteReview({ movieId, onNavigate }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     alert('Review submitted successfully!');
-    onNavigate('movie', { id: movieId });
+    navigate(`/movie/${movieId}`);
   };
 
   if (!movie) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <Card>
             <CardContent className="p-12 text-center">
               <p className="text-muted-foreground">Movie not found</p>
               <Button
-                onClick={() => onNavigate('browse')}
+                onClick={() => navigate('/browse')}
                 className="mt-4"
               >
                 Browse Movies
@@ -47,11 +53,11 @@ export function WriteReview({ movieId, onNavigate }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Write a Review</h1>
+          <h1 className="text-4xl font-bold mb-2 text-foreground">Write a Review</h1>
           <p className="text-muted-foreground">
             Share your thoughts about this movie
           </p>
@@ -67,7 +73,7 @@ export function WriteReview({ movieId, onNavigate }) {
                   alt={movie.title}
                   className="w-full aspect-[2/3] object-cover rounded mb-4"
                 />
-                <h3 className="font-bold text-lg mb-1">
+                <h3 className="font-bold text-lg mb-1 text-foreground">
                   {movie.title}
                 </h3>
                 <p className="text-sm text-muted-foreground">
@@ -83,13 +89,13 @@ export function WriteReview({ movieId, onNavigate }) {
           <div className="md:col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle>Your Review</CardTitle>
+                <CardTitle className="text-foreground">Your Review</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
 
                   <div className="space-y-2">
-                    <Label>Rating *</Label>
+                    <Label className="text-foreground">Rating *</Label>
                     <div className="flex gap-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -104,7 +110,7 @@ export function WriteReview({ movieId, onNavigate }) {
                             className={`h-10 w-10 ${
                               star <= (hoverRating || rating)
                                 ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-gray-300'
+                                : 'text-muted-foreground/30'
                             }`}
                           />
                         </button>
@@ -122,7 +128,7 @@ export function WriteReview({ movieId, onNavigate }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="title">Review Title *</Label>
+                    <Label htmlFor="title" className="text-foreground">Review Title *</Label>
                     <Input
                       id="title"
                       placeholder="Sum up your review in one line"
@@ -133,7 +139,7 @@ export function WriteReview({ movieId, onNavigate }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="content">Your Review *</Label>
+                    <Label htmlFor="content" className="text-foreground">Your Review *</Label>
                     <Textarea
                       id="content"
                       placeholder="Share your detailed thoughts about the movie..."
@@ -147,11 +153,11 @@ export function WriteReview({ movieId, onNavigate }) {
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
+                  <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20">
                     <div className="flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-orange-500 mt-0.5" />
+                      <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
                       <div>
-                        <Label htmlFor="spoilers" className="cursor-pointer">
+                        <Label htmlFor="spoilers" className="cursor-pointer text-foreground">
                           Contains Spoilers
                         </Label>
                         <p className="text-sm text-muted-foreground">
@@ -177,7 +183,7 @@ export function WriteReview({ movieId, onNavigate }) {
                       type="button"
                       variant="outline"
                       onClick={() =>
-                        onNavigate('movie', { id: movieId })
+                        navigate(`/movie/${movieId}`)
                       }
                     >
                       Cancel
@@ -189,7 +195,7 @@ export function WriteReview({ movieId, onNavigate }) {
 
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle className="text-lg">
+                <CardTitle className="text-lg text-foreground">
                   Review Guidelines
                 </CardTitle>
               </CardHeader>
