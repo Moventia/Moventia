@@ -1,0 +1,26 @@
+{
+  "name": "moventia-backend",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Moventia movie review platform - backend API (MongoDB)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "seed": "node seed.js"
+  },
+  "keywords": ["movie", "review", "social", "mern"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^9.2.1",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.2",
+    "uuid": "^11.1.0"
+  }
+}

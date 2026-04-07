@@ -1,0 +1,488 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #080808;
+  --foreground: #c8c0b0;
+  --card: #101010;
+  --card-foreground: #c8c0b0;
+  --popover: #101010;
+  --popover-foreground: #c8c0b0;
+  --primary: #c49c55;
+  --primary-foreground: #080808;
+  --secondary: #161616;
+  --secondary-foreground: #c8c0b0;
+  --muted: #141414;
+  --muted-foreground: #4a4a4a;
+  --accent: #1a1a1a;
+  --accent-foreground: #c8c0b0;
+  --destructive: #b42828;
+  --destructive-foreground: #f0e8d8;
+  --border: #1e1e1e;
+  --input: transparent;
+  --input-background: #0a0a0a;
+  --switch-background: #2a2a2a;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: rgba(196, 156, 85, 0.35);
+  --chart-1: #c49c55;
+  --chart-2: #8a7a5a;
+  --chart-3: #5a6a7a;
+  --chart-4: #7a5a4a;
+  --chart-5: #4a5a4a;
+  --radius: 0.25rem;
+  --sidebar: #0c0c0c;
+  --sidebar-foreground: #c8c0b0;
+  --sidebar-primary: #c49c55;
+  --sidebar-primary-foreground: #080808;
+  --sidebar-accent: #141414;
+  --sidebar-accent-foreground: #c8c0b0;
+  --sidebar-border: #1a1a1a;
+  --sidebar-ring: rgba(196, 156, 85, 0.35);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer base {
+  :where(:not(:has([class*=' text-']), :not(:has([class^='text-'])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOVENTIA — Global Dark + Gold Cinema Theme
+   Matches the LoginPage aesthetic across the entire site
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Base body styling ── */
+body {
+  font-family: 'DM Sans', sans-serif !important;
+  background-color: #080808 !important;
+  color: #c8c0b0 !important;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(180, 130, 60, 0.08) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+/* ── Headings — Cormorant Garamond serif font ── */
+h1, h2 {
+  font-family: 'Cormorant Garamond', serif !important;
+  color: #e8e0d0 !important;
+  letter-spacing: 0.04em;
+}
+
+h3, h4, h5, h6 {
+  color: #e8e0d0 !important;
+}
+
+/* ── Paragraphs and text ── */
+p {
+  color: #c8c0b0;
+}
+
+span {
+  color: inherit;
+}
+
+/* ── Navigation bar ── */
+nav.sticky {
+  background-color: rgba(12, 12, 12, 0.95) !important;
+  border-bottom-color: #1e1e1e !important;
+  backdrop-filter: blur(12px);
+}
+
+nav.sticky span {
+  color: #c8c0b0;
+}
+
+/* ── Cards ── */
+div[class*="rounded-"] {
+  border-color: #1e1e1e;
+}
+
+[data-slot="card"],
+.card,
+div[class*="rounded-xl"][class*="border"][class*="shadow"] {
+  background-color: #101010 !important;
+  border-color: #1e1e1e !important;
+  color: #c8c0b0 !important;
+}
+
+/* ── Button overrides ── */
+button[data-slot="button"],
+[data-slot="button"] {
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+/* Primary buttons — gold */
+button[data-variant="default"],
+[data-slot="button"]:not([data-variant]) {
+  background-color: transparent !important;
+  border: 1px solid rgba(196, 156, 85, 0.4) !important;
+  color: #c49c55 !important;
+}
+
+button[data-variant="default"]:hover,
+[data-slot="button"]:not([data-variant]):hover {
+  background-color: rgba(196, 156, 85, 0.08) !important;
+  border-color: rgba(196, 156, 85, 0.7) !important;
+}
+
+/* Ghost buttons */
+button[data-variant="ghost"],
+[data-variant="ghost"] {
+  color: #c8c0b0 !important;
+  background-color: transparent !important;
+}
+
+button[data-variant="ghost"]:hover,
+[data-variant="ghost"]:hover {
+  background-color: rgba(196, 156, 85, 0.06) !important;
+  color: #c49c55 !important;
+}
+
+/* Outline buttons */
+button[data-variant="outline"],
+[data-variant="outline"] {
+  border-color: #1e1e1e !important;
+  color: #c8c0b0 !important;
+  background-color: transparent !important;
+}
+
+button[data-variant="outline"]:hover,
+[data-variant="outline"]:hover {
+  background-color: rgba(196, 156, 85, 0.06) !important;
+  border-color: rgba(196, 156, 85, 0.4) !important;
+  color: #c49c55 !important;
+}
+
+/* ── Inputs ── */
+input[data-slot="input"],
+textarea[data-slot="textarea"],
+[data-slot="input"],
+[data-slot="textarea"] {
+  background-color: #0a0a0a !important;
+  border-color: #1e1e1e !important;
+  color: #c8c0b0 !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+input[data-slot="input"]:focus,
+textarea[data-slot="textarea"]:focus,
+[data-slot="input"]:focus,
+[data-slot="textarea"]:focus {
+  border-color: rgba(196, 156, 85, 0.35) !important;
+  background-color: #0c0c0c !important;
+}
+
+input[data-slot="input"]::placeholder,
+[data-slot="input"]::placeholder {
+  color: #2a2a2a !important;
+  font-style: italic;
+}
+
+/* ── Badges ── */
+[data-slot="badge"] {
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+[data-slot="badge"][data-variant="default"] {
+  background-color: #c49c55 !important;
+  color: #080808 !important;
+}
+
+[data-slot="badge"][data-variant="outline"] {
+  border-color: #2a2a2a !important;
+  color: #c8c0b0 !important;
+  background-color: transparent !important;
+}
+
+[data-slot="badge"][data-variant="secondary"] {
+  background-color: #161616 !important;
+  color: #c8c0b0 !important;
+}
+
+/* ── Select / Dropdown ── */
+[data-slot="select-trigger"] {
+  background-color: #0a0a0a !important;
+  border-color: #1e1e1e !important;
+  color: #c8c0b0 !important;
+}
+
+[data-slot="select-content"] {
+  background-color: #101010 !important;
+  border-color: #1e1e1e !important;
+}
+
+[data-slot="select-item"] {
+  color: #c8c0b0 !important;
+}
+
+[data-slot="select-item"]:hover,
+[data-slot="select-item"][data-highlighted] {
+  background-color: rgba(196, 156, 85, 0.08) !important;
+  color: #c49c55 !important;
+}
+
+/* ── Tabs ── */
+[data-slot="tabs-list"] {
+  background-color: #101010 !important;
+  border-color: #1e1e1e !important;
+}
+
+[data-slot="tabs-trigger"] {
+  color: #4a4a4a !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+[data-slot="tabs-trigger"][data-state="active"] {
+  background-color: rgba(196, 156, 85, 0.08) !important;
+  color: #c49c55 !important;
+}
+
+[data-slot="tabs-content"] {
+  color: #c8c0b0;
+}
+
+/* ── Separator ── */
+[data-slot="separator"],
+[role="separator"] {
+  background-color: #1e1e1e !important;
+}
+
+/* ── Scroll areas ── */
+[data-slot="scroll-area"] {
+  color: #c8c0b0;
+}
+
+/* ── Avatar ── */
+[data-slot="avatar-fallback"] {
+  background-color: #1a1a1a !important;
+  color: #c49c55 !important;
+}
+
+/* ── Dialog / Popover ── */
+[data-slot="dialog-content"],
+[data-slot="popover-content"] {
+  background-color: #101010 !important;
+  border-color: #1e1e1e !important;
+  color: #c8c0b0 !important;
+}
+
+/* ── Labels ── */
+label,
+[data-slot="label"] {
+  color: #c8c0b0 !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+/* ── Switch ── */
+[data-slot="switch"] {
+  background-color: #2a2a2a !important;
+}
+
+[data-slot="switch"][data-state="checked"] {
+  background-color: #c49c55 !important;
+}
+
+/* ── Muted text helper ── */
+.text-muted-foreground {
+  color: #5a5a5a !important;
+}
+
+/* ── Links / Hover states ── */
+a:hover,
+.hover\:text-primary:hover,
+[class*="hover:text-primary"]:hover {
+  color: #c49c55 !important;
+}
+
+.hover\:underline:hover {
+  text-decoration: underline;
+}
+
+/* ── Hero sections — dark cinema gradient ── */
+.min-h-screen > div:first-child[class*="relative"][class*="h-["] {
+  background: linear-gradient(to bottom, #1a1510, #0f0d0a, #080808) !important;
+}
+
+/* ── Star ratings gray state ── */
+.text-gray-300 {
+  color: #2a2a2a !important;
+}
+
+/* ── Override any remaining light backgrounds ── */
+.bg-gray-50 {
+  background-color: #080808 !important;
+}
+
+.bg-white,
+.bg-white\/95,
+.bg-white\/60 {
+  background-color: rgba(12, 12, 12, 0.95) !important;
+}
+
+.border-b {
+  border-bottom-color: #1e1e1e !important;
+}
+
+.border-t {
+  border-top-color: #1e1e1e !important;
+}
+
+/* ── Purple/Indigo gradient overrides — convert to dark gold ── */
+.from-purple-900,
+.from-purple-600 {
+  --tw-gradient-from: #1a1510 !important;
+}
+
+.to-indigo-900,
+.to-indigo-600 {
+  --tw-gradient-to: #0f0d0a !important;
+}
+
+.via-indigo-900 {
+  --tw-gradient-via: #12100d !important;
+}
+
+/* ── Blue-50 notification override ── */
+.bg-blue-50\/50 {
+  background-color: rgba(196, 156, 85, 0.04) !important;
+}
+
+/* ── Orange spoiler area override ── */
+.bg-orange-50 {
+  background-color: rgba(196, 156, 85, 0.04) !important;
+}
+
+.border-orange-200 {
+  border-color: rgba(196, 156, 85, 0.15) !important;
+}
+
+.text-orange-500 {
+  color: #c49c55 !important;
+}
+
+/* ── Card hover glow ── */
+[data-slot="card"]:hover,
+div[class*="rounded-xl"][class*="border"]:hover {
+  border-color: rgba(196, 156, 85, 0.2) !important;
+  box-shadow: 0 4px 24px rgba(196, 156, 85, 0.04) !important;
+}
+
+/* ── Film strip accent for primary color ── */
+.text-primary {
+  color: #c49c55 !important;
+}
+
+.bg-primary {
+  background-color: #c49c55 !important;
+  color: #080808 !important;
+}
+
+/* ── Ensure proper foreground text color ── */
+.text-foreground,
+.text-card-foreground,
+.text-accent-foreground {
+  color: #c8c0b0 !important;
+}
+
+/* ── Feature badge — gold ── */
+.bg-yellow-500 {
+  background-color: #c49c55 !important;
+}
+
+.hover\:bg-yellow-600:hover {
+  background-color: #a88540 !important;
+}
+
+/* ── Ensure font family propagates ── */
+.font-bold, .font-semibold, .font-medium {
+  font-family: inherit;
+}
