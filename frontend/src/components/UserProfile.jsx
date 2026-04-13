@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Star, Settings } from 'lucide-react';
+import { Star, Settings, Heart, MessageSquare, ThumbsUp, UserPlus } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -9,6 +9,7 @@ import { EditProfileModal } from './EditProfileModal';
 import { SpoilerContent } from './SpoilerContent';
 import { useParams } from 'react-router-dom';
 import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
+import { MovieCard } from './MovieCard';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -21,6 +22,8 @@ export function UserProfile({ onProfileUpdate }) {
   // ── State ──────────────────────────────────────────────────────────────────
   const [user, setUser] = useState(null);
   const [userReviews, setUserReviews] = useState([]);
+  const [userFavorites, setUserFavorites] = useState([]);
+  const [userActivity, setUserActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isFollowing, setIsFollowing] = useState(false);
@@ -78,6 +81,26 @@ export function UserProfile({ onProfileUpdate }) {
         } catch {
           // Reviews fetch failed — show empty
           setUserReviews([]);
+        }
+
+        // Fetch user's favorites from API
+        try {
+          const favsRes = await fetch(`${API_URL}/favorites/user/${encodeURIComponent(username)}`);
+          if (favsRes.ok) {
+            setUserFavorites(await favsRes.json());
+          }
+        } catch {
+          setUserFavorites([]);
+        }
+
+        // Fetch user's activity from API
+        try {
+          const activityRes = await fetch(`${API_URL}/profile/${encodeURIComponent(username)}/activity`);
+          if (activityRes.ok) {
+            setUserActivity(await activityRes.json());
+          }
+        } catch {
+          setUserActivity([]);
         }
       } catch (err) {
         setError('Could not load profile. Is the backend running?');
@@ -209,11 +232,28 @@ export function UserProfile({ onProfileUpdate }) {
       {/* Profile Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="reviews" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-3 mb-8">
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="favorites">Favorites</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-center mb-8">
+            <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted rounded-full p-1 h-auto">
+              <TabsTrigger 
+                value="reviews"
+                className="rounded-full py-2 data-[state=active]:bg-[#c8a86d] data-[state=active]:text-[#0f0d0a] text-muted-foreground font-medium transition-all"
+              >
+                Reviews
+              </TabsTrigger>
+              <TabsTrigger 
+                value="favorites"
+                className="rounded-full py-2 data-[state=active]:bg-[#c8a86d] data-[state=active]:text-[#0f0d0a] text-muted-foreground font-medium transition-all"
+              >
+                Favorites
+              </TabsTrigger>
+              <TabsTrigger 
+                value="activity"
+                className="rounded-full py-2 data-[state=active]:bg-[#c8a86d] data-[state=active]:text-[#0f0d0a] text-muted-foreground font-medium transition-all"
+              >
+                Activity
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="reviews" className="space-y-4">
             {userReviews.length > 0 ? (
@@ -282,24 +322,143 @@ export function UserProfile({ onProfileUpdate }) {
             )}
           </TabsContent>
 
-          <TabsContent value="favorites">
-            <Card>
-              <CardContent className="p-12 text-center">
-                <p className="text-muted-foreground">
-                  {isOwnProfile
-                    ? "You haven't added any favorites yet"
-                    : `${user.name} hasn't added any favorites yet`}
-                </p>
-              </CardContent>
-            </Card>
+          <TabsContent value="favorites" className="space-y-4">
+            {userFavorites.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                {userFavorites.map((movie) => (
+                  <MovieCard 
+                    key={movie.id} 
+                    movie={movie} 
+                    onClick={() => navigate(`/movie/${movie.id}`)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <p className="text-muted-foreground mb-4">
+                    {isOwnProfile
+                      ? "You haven't added any favorites yet"
+                      : `${user.name} hasn't added any favorites yet`}
+                  </p>
+                  {isOwnProfile && (
+                    <Button onClick={() => navigate('/browse')}>
+                      Browse Movies to Favorite
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
-          <TabsContent value="activity">
-            <Card>
-              <CardContent className="p-12 text-center">
-                <p className="text-muted-foreground">No recent activity</p>
-              </CardContent>
-            </Card>
+          <TabsContent value="activity" className="space-y-4">
+            {userActivity.length > 0 ? (
+              <div className="space-y-4">
+                {userActivity.map((item) => (
+                  <Card key={item.id} className="hover:bg-accent/5 transition-colors">
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="flex-shrink-0">
+                        {item.type === 'review' && (
+                          <div className="h-10 w-10 rounded-full bg-yellow-400/10 flex items-center justify-center">
+                            <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                          </div>
+                        )}
+                        {item.type === 'favorite' && (
+                          <div className="h-10 w-10 rounded-full bg-red-400/10 flex items-center justify-center">
+                            <Heart className="h-5 w-5 text-red-400 fill-red-400" />
+                          </div>
+                        )}
+                        {item.type === 'like' && (
+                          <div className="h-10 w-10 rounded-full bg-blue-400/10 flex items-center justify-center">
+                            <ThumbsUp className="h-5 w-5 text-blue-400 fill-blue-400" />
+                          </div>
+                        )}
+                        {item.type === 'follow' && (
+                          <div className="h-10 w-10 rounded-full bg-green-400/10 flex items-center justify-center">
+                            <UserPlus className="h-5 w-5 text-green-400" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                          <span className="font-medium text-foreground">{isOwnProfile ? 'You ' : user.name}</span>
+                          <span className="text-muted-foreground">
+                            {item.type === 'review' && 'wrote a review for'}
+                            {item.type === 'favorite' && 'added to favorites'}
+                            {item.type === 'like' && 'liked a review by'}
+                            {item.type === 'follow' && 'started following'}
+                          </span>
+                          {item.type === 'review' && (
+                            <span 
+                              className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => navigate(`/movie/${item.data.movieId}`)}
+                            >
+                              {item.data.movieTitle}
+                            </span>
+                          )}
+                          {item.type === 'favorite' && (
+                            <span 
+                              className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => navigate(`/movie/${item.data.movieId}`)}
+                            >
+                              {item.data.movieTitle}
+                            </span>
+                          )}
+                          {item.type === 'like' && (
+                            <>
+                              <span 
+                                className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                                onClick={() => navigate(`/profile/${item.data.authorName}`)}
+                              >
+                                @{item.data.authorName}
+                              </span>
+                              <span className="text-muted-foreground">on</span>
+                              <span 
+                                className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                                onClick={() => navigate(`/movie/${item.data.movieId}`)}
+                              >
+                                {item.data.movieTitle}
+                              </span>
+                            </>
+                          )}
+                          {item.type === 'follow' && (
+                            <span 
+                               className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                               onClick={() => navigate(`/profile/${item.data.username}`)}
+                            >
+                              {item.data.fullName} (@{item.data.username})
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(item.timestamp).toLocaleString(undefined, { 
+                            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                          })}
+                        </p>
+                      </div>
+
+                      {(item.type === 'review' || item.type === 'favorite' || item.type === 'like') && (
+                        <div className="hidden sm:block flex-shrink-0 ml-4">
+                          <img 
+                            src={item.data.moviePoster} 
+                            alt={item.data.movieTitle} 
+                            className="h-12 w-8 object-cover rounded shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => navigate(`/movie/${item.data.movieId}`)}
+                          />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <p className="text-muted-foreground">No recent activity</p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>

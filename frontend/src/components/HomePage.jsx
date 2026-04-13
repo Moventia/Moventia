@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { SpoilerContent } from './SpoilerContent';
 import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
+import { MovieCard } from './MovieCard';
 
 const scrollRowStyle = `
   .scroll-row-outer {
@@ -85,31 +86,7 @@ function ScrollableMovieRow({ movies, onMovieClick }) {
 
 const API_URL = 'http://localhost:8080/api';
 
-function MovieCard({ movie, onClick }) {
-  return (
-    <Card
-      className="h-full flex flex-col overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30"
-      onClick={onClick}
-    >
-      <div className="aspect-[2/3] relative w-full shrink-0">
-        <ImageWithFallback src={movie.poster} alt={movie.title} className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute top-2 right-2 bg-black/80 text-white px-2 py-1 rounded flex items-center gap-1">
-          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-          <span className="text-sm font-semibold">{movie.rating}</span>
-        </div>
-      </div>
-      <CardContent className="p-4 flex-1 flex flex-col">
-        <h3 className="font-semibold mb-1 line-clamp-1 text-foreground">{movie.title}</h3>
-        <p className="text-sm text-muted-foreground">{movie.year}</p>
-        <div className="flex flex-wrap gap-1 mt-auto pt-2">
-          {(movie.genre || []).slice(0, 2).map((g) => (
-            <Badge key={g} variant="secondary" className="text-xs">{g}</Badge>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+
 
 export function HomePage({ isLoggedIn }) {
   const navigate = useNavigate();
