@@ -47,6 +47,32 @@ const userSchema = new mongoose.Schema(
   },
 );
 
+// ── Pre-delete hooks: cascade delete all related data ────────────────────────
+userSchema.pre('findOneAndDelete', async function(next) {
+  const user = await this.model.findOne(this.getFilter());
+  if (!user) return next();
+  
+  // Import models inside hook to avoid circular dependencies
+  const { Review, ReviewLike, Follow, Notification, Favorite } = await import('./index.js');
+  
+  // Delete all reviews by this user
+  await Review.deleteMany({ userId: user._id });
+  
+  // Delete all likes on reviews by this user
+  await ReviewLike.deleteMany({ userId: user._id });
+  
+  // Delete all follow relationships (both follower and following)
+  await Follow.deleteMany({ $or: [{ follower: user._id }, { following: user._id }] });
+  
+  // Delete all notifications for this user and notifications triggered by this user
+  await Notification.deleteMany({ $or: [{ user: user._id }, { fromUser: user._id }] });
+  
+  // Delete all favorites by this user
+  await Favorite.deleteMany({ userId: user._id });
+  
+  next();
+});
+
 // ── Virtuals ─────────────────────────────────────────────────────────────────
 // These let us call user.followerCount, user.followingCount, user.reviewCount
 // without storing redundant data.  They rely on the Follow & Review models.

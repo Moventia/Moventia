@@ -72,6 +72,19 @@ async function blendRatings(movies) {
   });
 }
 
+function sortMovies(movies, sortBy) {
+  const sorters = {
+    rating: (a, b) => (b.rating - a.rating) || (b.reviewCount - a.reviewCount) || a.title.localeCompare(b.title),
+    year: (a, b) => (b.year - a.year) || (b.rating - a.rating) || a.title.localeCompare(b.title),
+    reviews: (a, b) => (b.reviewCount - a.reviewCount) || (b.rating - a.rating) || a.title.localeCompare(b.title),
+  };
+
+  const sorter = sorters[sortBy];
+  if (!sorter) return movies;
+
+  return [...movies].sort(sorter);
+}
+
 // How many TMDB pages to combine into one "app page" (~60 movies per page)
 const TMDB_PAGES_PER_APP_PAGE = 3;
 
@@ -142,8 +155,9 @@ router.get('/', async (req, res) => {
     const totalAppPages = Math.ceil(tmdbTotalPages / TMDB_PAGES_PER_APP_PAGE);
 
     const moviesWithBlend = await blendRatings(combined);
+    const sortedMovies = sortMovies(moviesWithBlend, sort);
     return res.json({
-      movies: moviesWithBlend,
+      movies: sortedMovies,
       page: appPage,
       totalPages: totalAppPages,
     });

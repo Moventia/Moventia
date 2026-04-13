@@ -1,35 +1,84 @@
 import { useState } from 'react';
-import { AlertTriangle, Eye } from 'lucide-react';
+import { EyeOff, Unlock } from 'lucide-react';
 
 export function SpoilerContent({ children, className = '' }) {
   const [revealed, setRevealed] = useState(false);
 
   if (revealed) {
     return (
-      <div className={className}>
-        <p className="text-muted-foreground text-sm animate-in fade-in duration-300">
+      <div className={`relative ${className}`}>
+        <p
+          className="text-muted-foreground text-sm mb-3"
+          style={{
+            animation: 'spoilerReveal 350ms ease forwards',
+          }}
+        >
           {children}
         </p>
+        <style>{`
+          @keyframes spoilerReveal {
+            from { filter: blur(8px); opacity: 0.4; }
+            to   { filter: blur(0px); opacity: 1; }
+          }
+        `}</style>
       </div>
     );
   }
 
   return (
-    <button
-      type="button"
+    <div
+      className={`relative mb-3 cursor-pointer select-none ${className}`}
       onClick={() => setRevealed(true)}
-      className={`w-full text-left cursor-pointer group ${className}`}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && setRevealed(true)}
+      title="Click to reveal spoiler"
     >
-      <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-yellow-500/20 bg-yellow-500/5 hover:bg-yellow-500/10 hover:border-yellow-500/40 transition-all duration-200">
-        <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0" />
-        <span className="text-sm text-yellow-500/90 font-medium">
-          This review contains spoilers
-        </span>
-        <span className="ml-auto flex items-center gap-1.5 text-xs text-yellow-500/60 group-hover:text-yellow-500/90 transition-colors">
-          <Eye className="h-3.5 w-3.5" />
-          Reveal
-        </span>
+      {/* Blurred text behind */}
+      <p
+        className="text-muted-foreground text-sm"
+        style={{ filter: 'blur(6px)', userSelect: 'none', pointerEvents: 'none' }}
+        aria-hidden="true"
+      >
+        {children}
+      </p>
+
+      {/* Centered overlay badge */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 14px',
+            borderRadius: '999px',
+            background: 'rgba(15, 13, 10, 0.75)',
+            border: '1px solid rgba(196, 156, 85, 0.35)',
+            backdropFilter: 'blur(6px)',
+            boxShadow: '0 0 16px rgba(196, 156, 85, 0.1)',
+            transition: 'border-color 200ms, box-shadow 200ms',
+          }}
+          className="group-hover:border-primary/60"
+        >
+          <EyeOff
+            style={{ width: 13, height: 13, color: '#c49c55', flexShrink: 0 }}
+          />
+          <span style={{ fontSize: '12px', fontWeight: 600, color: '#c49c55', letterSpacing: '0.04em' }}>
+            SPOILER
+          </span>
+          <span style={{ width: '1px', height: '12px', background: 'rgba(196,156,85,0.3)' }} />
+          <Unlock style={{ width: 12, height: 12, color: 'rgba(196,156,85,0.6)', flexShrink: 0 }} />
+          <span style={{ fontSize: '11px', color: 'rgba(196,156,85,0.6)' }}>click to reveal</span>
+        </div>
       </div>
-    </button>
+    </div>
   );
 }

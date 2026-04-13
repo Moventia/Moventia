@@ -97,8 +97,8 @@ export function EditProfileModal({ user, onClose, onSaved }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(0, 0, 0, 0.7);
-          backdrop-filter: blur(4px);
+          background: rgba(0, 0, 0, 0.75);
+          backdrop-filter: blur(8px);
           animation: epm-fadeIn 0.2s ease;
         }
 
@@ -113,14 +113,15 @@ export function EditProfileModal({ user, onClose, onSaved }) {
         }
 
         .epm-card {
-          background: #101010;
-          border: 1px solid #1e1e1e;
-          border-radius: 8px;
+          background: linear-gradient(160deg, rgba(14, 22, 36, 0.96), rgba(9, 15, 27, 0.94));
+          border: 1px solid rgba(203, 213, 225, 0.16);
+          border-radius: 16px;
           width: 100%;
           max-width: 480px;
           margin: 1rem;
           overflow: hidden;
           animation: epm-slideUp 0.3s ease;
+          box-shadow: 0 30px 72px rgba(4, 10, 20, 0.55);
         }
 
         .epm-header {
@@ -128,22 +129,22 @@ export function EditProfileModal({ user, onClose, onSaved }) {
           align-items: center;
           justify-content: space-between;
           padding: 1.25rem 1.5rem;
-          border-bottom: 1px solid #1a1a1a;
+          border-bottom: 1px solid rgba(203, 213, 225, 0.14);
         }
 
         .epm-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.5rem;
-          font-weight: 400;
-          color: #e8e0d0;
-          letter-spacing: 0.06em;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 1.3rem;
+          font-weight: 700;
+          color: #f2f4fa;
+          letter-spacing: 0;
           margin: 0;
         }
 
         .epm-close {
           background: none;
           border: none;
-          color: #555;
+          color: #8f9db7;
           cursor: pointer;
           padding: 4px;
           display: flex;
@@ -151,7 +152,7 @@ export function EditProfileModal({ user, onClose, onSaved }) {
           transition: color 0.2s;
         }
 
-        .epm-close:hover { color: #c49c55; }
+        .epm-close:hover { color: #c8a86d; }
 
         .epm-body {
           padding: 1.5rem;
@@ -165,30 +166,30 @@ export function EditProfileModal({ user, onClose, onSaved }) {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          font-size: 0.7rem;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: #4a4a4a;
+          font-size: 0.84rem;
+          letter-spacing: 0;
+          text-transform: none;
+          color: #c8d0e0;
           margin-bottom: 0.5rem;
-          font-weight: 400;
+          font-weight: 600;
         }
 
         .epm-label svg {
           width: 13px;
           height: 13px;
-          color: #3a3a3a;
+          color: #7c8aa4;
         }
 
         .epm-input {
           width: 100%;
-          background: #0a0a0a;
-          border: 1px solid #1e1e1e;
-          border-radius: 4px;
+          background: rgba(9, 16, 28, 0.86);
+          border: 1px solid rgba(203, 213, 225, 0.16);
+          border-radius: 10px;
           padding: 0.75rem 1rem;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 0.875rem;
-          font-weight: 300;
-          color: #c8c0b0;
+          font-weight: 500;
+          color: #e6e8ee;
           outline: none;
           transition: border-color 0.2s;
           box-sizing: border-box;
@@ -196,7 +197,7 @@ export function EditProfileModal({ user, onClose, onSaved }) {
         }
 
         .epm-input:focus {
-          border-color: rgba(196, 156, 85, 0.35);
+          border-color: rgba(200, 168, 109, 0.5);
         }
 
         .epm-textarea {
@@ -220,41 +221,41 @@ export function EditProfileModal({ user, onClose, onSaved }) {
           gap: 0.75rem;
           justify-content: flex-end;
           padding: 1rem 1.5rem;
-          border-top: 1px solid #1a1a1a;
+          border-top: 1px solid rgba(203, 213, 225, 0.14);
         }
 
         .epm-btn {
           padding: 0.65rem 1.5rem;
-          border-radius: 4px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 0.72rem;
-          font-weight: 400;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
+          border-radius: 999px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 0.8rem;
+          font-weight: 600;
+          letter-spacing: 0;
+          text-transform: none;
           cursor: pointer;
           transition: background 0.2s, border-color 0.2s, color 0.2s;
         }
 
         .epm-btn-cancel {
           background: transparent;
-          border: 1px solid #2a2a2a;
-          color: #666;
+          border: 1px solid rgba(203, 213, 225, 0.22);
+          color: #b5bfce;
         }
 
         .epm-btn-cancel:hover {
-          border-color: #444;
-          color: #999;
+          border-color: rgba(203, 213, 225, 0.4);
+          color: #dee3ee;
         }
 
         .epm-btn-save {
-          background: transparent;
-          border: 1px solid rgba(196, 156, 85, 0.4);
-          color: #c49c55;
+          background: linear-gradient(120deg, #d6b476, #b88f4b);
+          border: 1px solid rgba(218, 185, 119, 0.9);
+          color: #11131a;
         }
 
         .epm-btn-save:hover:not(:disabled) {
-          background: rgba(196, 156, 85, 0.08);
-          border-color: rgba(196, 156, 85, 0.7);
+          background: linear-gradient(120deg, #e1c188, #c79a52);
+          border-color: rgba(234, 203, 141, 1);
         }
 
         .epm-btn-save:disabled {
@@ -265,7 +266,7 @@ export function EditProfileModal({ user, onClose, onSaved }) {
         .epm-char-count {
           text-align: right;
           font-size: 0.68rem;
-          color: #3a3a3a;
+          color: #8d9ab1;
           margin-top: 0.25rem;
         }
 
@@ -279,8 +280,8 @@ export function EditProfileModal({ user, onClose, onSaved }) {
           width: 64px;
           height: 64px;
           border-radius: 50%;
-          background: #1a1a1a;
-          border: 1px solid #2a2a2a;
+          background: #1b2435;
+          border: 1px solid rgba(203, 213, 225, 0.26);
           object-fit: cover;
         }
 
@@ -288,9 +289,9 @@ export function EditProfileModal({ user, onClose, onSaved }) {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          background: rgba(196, 156, 85, 0.05);
-          border: 1px solid rgba(196, 156, 85, 0.3);
-          color: #c49c55;
+          background: rgba(200, 168, 109, 0.12);
+          border: 1px solid rgba(200, 168, 109, 0.42);
+          color: #e2c38d;
           padding: 0.5rem 1rem;
           border-radius: 4px;
           font-size: 0.75rem;
@@ -299,8 +300,8 @@ export function EditProfileModal({ user, onClose, onSaved }) {
         }
 
         .epm-upload-btn:hover {
-          background: rgba(196, 156, 85, 0.1);
-          border-color: rgba(196, 156, 85, 0.5);
+          background: rgba(200, 168, 109, 0.2);
+          border-color: rgba(200, 168, 109, 0.65);
         }
       `}</style>
 

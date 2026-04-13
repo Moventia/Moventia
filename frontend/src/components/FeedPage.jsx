@@ -13,13 +13,14 @@ export function FeedPage() {
   const navigate = useNavigate();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedScope, setFeedScope] = useState('following');
 
   useEffect(() => {
     const fetchFeed = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_URL}/reviews/feed`, {
+        const res = await fetch(`${API_URL}/reviews/feed?scope=${feedScope}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -32,7 +33,7 @@ export function FeedPage() {
       }
     };
     fetchFeed();
-  }, []);
+  }, [feedScope]);
 
   const handleLike = async (reviewId) => {
     const token = localStorage.getItem('token');
@@ -69,12 +70,32 @@ export function FeedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="page-feed cinematic-page min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 text-foreground">Your Feed</h1>
-          <p className="text-muted-foreground">Reviews from people you follow</p>
+          <p className="text-muted-foreground">
+            {feedScope === 'following'
+              ? 'Reviews from people you follow'
+              : 'Reviews from everyone on Moventia'}
+          </p>
+          <div className="mt-4 inline-flex gap-2 rounded-full border border-border p-1">
+            <Button
+              size="sm"
+              variant={feedScope === 'following' ? 'default' : 'ghost'}
+              onClick={() => setFeedScope('following')}
+            >
+              Following
+            </Button>
+            <Button
+              size="sm"
+              variant={feedScope === 'all' ? 'default' : 'ghost'}
+              onClick={() => setFeedScope('all')}
+            >
+              All People
+            </Button>
+          </div>
         </div>
 
         {loading ? (
@@ -173,7 +194,9 @@ export function FeedPage() {
           <Card>
             <CardContent className="p-12 text-center">
               <p className="text-muted-foreground mb-4">
-                Your feed is empty. Follow other users to see their reviews here!
+                {feedScope === 'following'
+                  ? 'Your feed is empty. Follow other users to see their reviews here!'
+                  : 'No reviews yet from the community.'}
               </p>
               <Button onClick={() => navigate('/browse')}>Browse Movies</Button>
             </CardContent>

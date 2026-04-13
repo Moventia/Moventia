@@ -7,7 +7,7 @@ import multer from 'multer';
 import path from 'path';
 import { v4 as uuid } from 'uuid';
 import { requireAuth, optionalAuth } from '../middleware/auth.js';
-import { User, Follow, Review } from '../models/index.js';
+import { User, Follow, Review, Favorite, ReviewLike, Notification } from '../models/index.js';
 
 const router = Router();
 
@@ -70,6 +70,17 @@ router.put('/me', requireAuth, async (req, res) => {
   if (avatarUrl !== undefined) req.user.avatarUrl = avatarUrl;
   await req.user.save();
   return res.json(await buildProfile(req.user, req.user._id));
+});
+
+// ── Delete account ───────────────────────────────────────────────────────────
+router.delete('/me', requireAuth, async (req, res) => {
+  const userId = req.user._id;
+  const username = req.user.username;
+  
+  // Use findOneAndDelete to trigger pre-delete hooks that cascade delete all related data
+  await User.findOneAndDelete({ _id: userId });
+  
+  return res.json({ message: `User ${username} and all associated data deleted successfully` });
 });
 
 router.post('/me/avatar', requireAuth, upload.single('file'), async (req, res) => {

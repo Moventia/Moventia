@@ -97,10 +97,16 @@ router.get('/recent', optionalAuth, async (req, res) => {
 
 // ── Feed (reviews from followed users) ───────────────────────────────────────
 router.get('/feed', requireAuth, async (req, res) => {
-  const follows = await Follow.find({ follower: req.user._id });
-  const followingIds = follows.map(f => f.following);
-  
-  const feedReviews = await Review.find({ userId: { $in: followingIds } })
+  const scope = req.query.scope === 'all' ? 'all' : 'following';
+
+  let filter = {};
+  if (scope === 'following') {
+    const follows = await Follow.find({ follower: req.user._id });
+    const followingIds = follows.map(f => f.following);
+    filter = { userId: { $in: followingIds } };
+  }
+
+  const feedReviews = await Review.find(filter)
     .sort({ createdAt: -1 })
     .populate('userId');
     

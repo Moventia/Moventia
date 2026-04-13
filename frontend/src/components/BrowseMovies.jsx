@@ -13,11 +13,13 @@ import {
 } from './ui/select';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
+import { useLocation } from 'react-router-dom';
 
 const API_URL = 'http://localhost:8080/api';
 
 export function BrowseMovies() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,6 +37,14 @@ export function BrowseMovies() {
       .then((data) => setGenres(data))
       .catch(() => {});
   }, []);
+
+  // Read initial/updated query from URL for navbar Enter-search handoff
+  useEffect(() => {
+    const q = new URLSearchParams(location.search).get('q') || '';
+    if (q !== searchQuery) {
+      setSearchQuery(q);
+    }
+  }, [location.search]);
 
   const allGenres = ['All', ...genres.map((g) => g.name)];
 
@@ -101,8 +111,8 @@ export function BrowseMovies() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
+    <div className="page-browse cinematic-page min-h-screen bg-background">
+      <div className="container mx-auto px-2 sm:px-3 lg:px-4 py-8">
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 text-foreground">Browse Movies</h1>
@@ -232,7 +242,7 @@ export function BrowseMovies() {
 
         {/* Pagination */}
         {!loading && totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-10 mb-4">
+          <div className="flex items-center justify-center gap-2 mb-4" style={{ marginTop: '4rem' }}>
             <Button
               variant="outline"
               size="sm"

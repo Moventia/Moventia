@@ -15,8 +15,11 @@ import { Chatbot } from './components/Chatbot';
 const API_URL = 'http://localhost:8080/api';
 
 // Simple protected route wrapper
-function ProtectedRoute({ isLoggedIn, children }) {
+function ProtectedRoute({ isLoggedIn, isAuthReady, children }) {
   const location = useLocation();
+  if (!isAuthReady) {
+    return null;
+  }
   if (!isLoggedIn) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -25,6 +28,7 @@ function ProtectedRoute({ isLoggedIn, children }) {
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthReady, setIsAuthReady] = useState(false);
   const [navUser, setNavUser] = useState(null);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
@@ -82,6 +86,7 @@ export default function App() {
       fetchNavUser();
       fetchNotificationCount();
     }
+    setIsAuthReady(true);
   }, []);
 
   // Poll notifications every 30s when logged in
@@ -98,7 +103,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="app-shell min-h-screen bg-background">
+      <div className="app-atmosphere" aria-hidden="true" />
       <Navigation
         isLoggedIn={isLoggedIn}
         onLogout={handleLogout}
@@ -106,59 +112,61 @@ export default function App() {
         user={navUser}
       />
 
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/browse" element={<BrowseMovies />} />
-        <Route path="/movie/:id" element={<MovieDetail isLoggedIn={isLoggedIn} />} />
-        <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+      <main className="app-main">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<HomePage isLoggedIn={isLoggedIn} />} />
+          <Route path="/browse" element={<BrowseMovies />} />
+          <Route path="/movie/:id" element={<MovieDetail isLoggedIn={isLoggedIn} />} />
+          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
 
-        {/* Protected Routes */}
-        <Route path="/profile" element={
-          <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <UserProfile onProfileUpdate={fetchNavUser} />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/profile/:userId" element={
-          <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <UserProfile />
-          </ProtectedRoute>
-        } />
+          {/* Protected Routes */}
+          <Route path="/profile" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} isAuthReady={isAuthReady}>
+              <UserProfile onProfileUpdate={fetchNavUser} />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/profile/:userId" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} isAuthReady={isAuthReady}>
+              <UserProfile />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/profile/:userId/followers" element={
-          <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <FollowersPage tab="followers" />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/profile/:userId/following" element={
-          <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <FollowersPage tab="following" />
-          </ProtectedRoute>
-        } />
+          <Route path="/profile/:userId/followers" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} isAuthReady={isAuthReady}>
+              <FollowersPage tab="followers" />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/profile/:userId/following" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} isAuthReady={isAuthReady}>
+              <FollowersPage tab="following" />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/feed" element={
-          <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <FeedPage />
-          </ProtectedRoute>
-        } />
+          <Route path="/feed" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} isAuthReady={isAuthReady}>
+              <FeedPage />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/notifications" element={
-          <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <NotificationsPage />
-          </ProtectedRoute>
-        } />
+          <Route path="/notifications" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} isAuthReady={isAuthReady}>
+              <NotificationsPage />
+            </ProtectedRoute>
+          } />
 
-        <Route path="/movie/:id/review" element={
-          <ProtectedRoute isLoggedIn={isLoggedIn}>
-            <WriteReview />
-          </ProtectedRoute>
-        } />
+          <Route path="/movie/:id/review" element={
+            <ProtectedRoute isLoggedIn={isLoggedIn} isAuthReady={isAuthReady}>
+              <WriteReview />
+            </ProtectedRoute>
+          } />
 
-        {/* Catch-all route */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Catch-all route */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
 
       {/* Chatbot overlay */}
       {isLoggedIn && <Chatbot />}

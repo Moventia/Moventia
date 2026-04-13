@@ -65,19 +65,20 @@ export function LoginPage({ onLogin }) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
         .cin-root {
           min-height: 100vh;
-          background-color: #080808;
+          background-color: #070a11;
           background-image:
-            radial-gradient(ellipse 80% 50% at 50% -10%, rgba(180, 130, 60, 0.12) 0%, transparent 60%),
-            url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            radial-gradient(circle at 15% 5%, rgba(79, 163, 216, 0.14) 0%, transparent 38%),
+            radial-gradient(circle at 90% 0%, rgba(200, 168, 109, 0.16) 0%, transparent 30%),
+            linear-gradient(180deg, #070a11 0%, #0a1220 100%);
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 2rem 1rem;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .cin-wrap {
@@ -88,80 +89,82 @@ export function LoginPage({ onLogin }) {
         /* ── Brand ── */
         .cin-brand {
           text-align: center;
-          margin-bottom: 2.5rem;
+          margin-bottom: 1.75rem;
         }
 
         .cin-logo-ring {
           width: 52px;
           height: 52px;
-          border: 1px solid rgba(196, 156, 85, 0.4);
+          border: 1px solid rgba(200, 168, 109, 0.55);
           border-radius: 50%;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           margin-bottom: 1rem;
-          background: rgba(196, 156, 85, 0.06);
+          background: rgba(200, 168, 109, 0.1);
         }
 
         .cin-logo-ring svg {
-          color: #c49c55;
+          color: #c8a86d;
           width: 22px;
           height: 22px;
         }
 
         .cin-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 2.4rem;
-          font-weight: 300;
-          letter-spacing: 0.18em;
-          color: #e8e0d0;
-          text-transform: uppercase;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 2rem;
+          font-weight: 800;
+          letter-spacing: 0.02em;
+          color: #f5f7fc;
+          text-transform: none;
           margin: 0;
           line-height: 1;
         }
 
         .cin-tagline {
           margin-top: 0.5rem;
-          font-size: 0.72rem;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-          color: #5a5a5a;
-          font-weight: 300;
+          font-size: 0.85rem;
+          letter-spacing: 0.01em;
+          text-transform: none;
+          color: #b8c2d7;
+          font-weight: 500;
         }
 
         /* ── Card ── */
         .cin-card {
-          background: #101010;
-          border: 1px solid #1e1e1e;
-          border-radius: 4px;
+          background: linear-gradient(155deg, rgba(14, 22, 36, 0.95), rgba(10, 16, 28, 0.9));
+          border: 1px solid rgba(203, 213, 225, 0.16);
+          border-radius: 16px;
           overflow: hidden;
+          box-shadow: 0 20px 60px rgba(4, 10, 20, 0.5);
+          backdrop-filter: blur(10px);
         }
 
         /* ── Tabs ── */
         .cin-tabs {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          border-bottom: 1px solid #1a1a1a;
+          border-bottom: 1px solid rgba(203, 213, 225, 0.12);
         }
 
         .cin-tab {
           padding: 1rem;
           background: none;
           border: none;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 0.72rem;
-          font-weight: 400;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 0.84rem;
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          text-transform: none;
           cursor: pointer;
           transition: color 0.2s, background 0.2s;
-          color: #3d3d3d;
+          color: #8d98ae;
           position: relative;
         }
 
         .cin-tab.active {
-          color: #c49c55;
-          background: rgba(196, 156, 85, 0.04);
+          color: #f2f4f9;
+          background: rgba(200, 168, 109, 0.1);
         }
 
         .cin-tab.active::after {
@@ -171,16 +174,16 @@ export function LoginPage({ onLogin }) {
           left: 0;
           right: 0;
           height: 1px;
-          background: #c49c55;
+          background: #c8a86d;
         }
 
         .cin-tab:hover:not(.active) {
-          color: #666;
+          color: #c4cbdb;
         }
 
         /* ── Form body ── */
         .cin-form-body {
-          padding: 2rem;
+          padding: 1.75rem;
         }
 
         /* ── Error ── */
@@ -203,12 +206,12 @@ export function LoginPage({ onLogin }) {
 
         .cin-label {
           display: block;
-          font-size: 0.68rem;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: #4a4a4a;
+          font-size: 0.8rem;
+          letter-spacing: 0;
+          text-transform: none;
+          color: #c9d0df;
           margin-bottom: 0.5rem;
-          font-weight: 400;
+          font-weight: 600;
         }
 
         .cin-input-wrap {
@@ -220,7 +223,7 @@ export function LoginPage({ onLogin }) {
           left: 0.9rem;
           top: 50%;
           transform: translateY(-50%);
-          color: #2e2e2e;
+          color: #62708a;
           width: 14px;
           height: 14px;
           pointer-events: none;
@@ -229,14 +232,14 @@ export function LoginPage({ onLogin }) {
 
         .cin-input {
           width: 100%;
-          background: #0a0a0a;
-          border: 1px solid #1e1e1e;
-          border-radius: 2px;
+          background: rgba(9, 16, 28, 0.85);
+          border: 1px solid rgba(203, 213, 225, 0.16);
+          border-radius: 10px;
           padding: 0.75rem 0.9rem 0.75rem 2.5rem;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 0.875rem;
-          font-weight: 300;
-          color: #c8c0b0;
+          font-weight: 500;
+          color: #e6e8ee;
           outline: none;
           transition: border-color 0.2s, background 0.2s;
           box-sizing: border-box;
@@ -244,18 +247,18 @@ export function LoginPage({ onLogin }) {
         }
 
         .cin-input::placeholder {
-          color: #2a2a2a;
-          font-style: italic;
+          color: #77849d;
+          font-style: normal;
         }
 
         .cin-input:focus {
-          border-color: rgba(196, 156, 85, 0.35);
-          background: #0c0c0c;
+          border-color: rgba(200, 168, 109, 0.5);
+          background: rgba(11, 19, 33, 0.95);
         }
 
         .cin-input:focus + .cin-focus-line,
         .cin-input-wrap:focus-within .cin-input-icon {
-          color: rgba(196, 156, 85, 0.5);
+          color: rgba(200, 168, 109, 0.8);
         }
 
         .cin-eye-btn {
@@ -266,55 +269,55 @@ export function LoginPage({ onLogin }) {
           background: none;
           border: none;
           cursor: pointer;
-          color: #2e2e2e;
+          color: #7e8ca8;
           padding: 0;
           display: flex;
           align-items: center;
           transition: color 0.2s;
         }
 
-        .cin-eye-btn:hover { color: #5a5a5a; }
+        .cin-eye-btn:hover { color: #c8a86d; }
         .cin-eye-btn svg { width: 14px; height: 14px; }
 
         /* ── Forgot ── */
         .cin-forgot {
           display: block;
           text-align: right;
-          font-size: 0.7rem;
-          letter-spacing: 0.1em;
-          color: #3a3a3a;
+          font-size: 0.78rem;
+          letter-spacing: 0;
+          color: #95a1b7;
           background: none;
           border: none;
           cursor: pointer;
           padding: 0;
           margin-bottom: 1.5rem;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Plus Jakarta Sans', sans-serif;
           text-decoration: none;
           transition: color 0.2s;
         }
-        .cin-forgot:hover { color: #c49c55; }
+        .cin-forgot:hover { color: #c8a86d; }
 
         /* ── Submit ── */
         .cin-submit {
           width: 100%;
           padding: 0.85rem;
-          background: transparent;
-          border: 1px solid rgba(196, 156, 85, 0.4);
-          border-radius: 2px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 0.72rem;
-          font-weight: 400;
-          letter-spacing: 0.25em;
-          text-transform: uppercase;
-          color: #c49c55;
+          background: linear-gradient(120deg, #d6b476, #b88f4b);
+          border: 1px solid rgba(218, 185, 119, 0.9);
+          border-radius: 999px;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 0.84rem;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          text-transform: none;
+          color: #11131a;
           cursor: pointer;
           transition: background 0.2s, color 0.2s, border-color 0.2s;
           margin-top: 0.25rem;
         }
 
         .cin-submit:hover:not(:disabled) {
-          background: rgba(196, 156, 85, 0.08);
-          border-color: rgba(196, 156, 85, 0.7);
+          background: linear-gradient(120deg, #e1c188, #c79a52);
+          border-color: rgba(234, 203, 141, 1);
         }
 
         .cin-submit:disabled {
@@ -333,23 +336,23 @@ export function LoginPage({ onLogin }) {
         .cin-divider-line {
           flex: 1;
           height: 1px;
-          background: #181818;
+          background: rgba(203, 213, 225, 0.14);
         }
 
         .cin-divider-text {
-          font-size: 0.65rem;
-          letter-spacing: 0.2em;
-          text-transform: uppercase;
-          color: #2a2a2a;
+          font-size: 0.72rem;
+          letter-spacing: 0;
+          text-transform: none;
+          color: #8f9bb1;
         }
 
         /* ── Footer ── */
         .cin-footer {
           text-align: center;
           margin-top: 1.75rem;
-          font-size: 0.68rem;
-          letter-spacing: 0.08em;
-          color: #282828;
+          font-size: 0.76rem;
+          letter-spacing: 0;
+          color: #9aa6bc;
           line-height: 1.6;
         }
 
@@ -364,12 +367,12 @@ export function LoginPage({ onLogin }) {
         .cin-filmstrip-dot {
           width: 3px;
           height: 3px;
-          background: #1e1e1e;
+          background: rgba(203, 213, 225, 0.2);
           border-radius: 50%;
         }
 
         .cin-filmstrip-dot:nth-child(3) {
-          background: rgba(196, 156, 85, 0.4);
+          background: rgba(200, 168, 109, 0.9);
         }
       `}</style>
 
