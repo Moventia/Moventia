@@ -4,7 +4,7 @@
 
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
-import { Favorite } from '../models/index.js';
+import { Favorite, User } from '../models/index.js';
 import { getMovieDetail } from '../services/tmdb.js';
 
 const router = Router();
@@ -73,6 +73,21 @@ router.delete('/:movieId', requireAuth, async (req, res) => {
   if (!deleted) return res.status(404).json({ error: 'Not in favorites' });
   
   return res.json({ message: 'Removed from favorites' });
+});
+
+// ── GET /api/favorites/user/:username — list any user's favorites ────────────
+router.get('/user/:username', async (req, res) => {
+  const user = await User.findOne({ username: req.params.username.toLowerCase() });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const userFavs = await Favorite.find({ userId: user._id }).sort({ createdAt: -1 });
+  const results = await Promise.all(
+    userFavs.map(async (f) => {
+      const movie = await getMovieInfo(f.movieId);
+      return movie ? { ...movie, favoritedAt: f.createdAt } : null;
+    }),
+  );
+  return res.json(results.filter(Boolean));
 });
 
 export default router;

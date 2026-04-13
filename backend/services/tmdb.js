@@ -182,10 +182,10 @@ export async function searchMovies(query, page = 1) {
   };
 }
 
-// Discover by genre
-export async function discoverByGenre(genreId, page = 1, sortBy = 'popularity.desc') {
+// Discover all movies (no genre filter) with a custom sort and optional extra TMDB params
+export async function discoverMovies(page = 1, sortBy = 'popularity.desc', extraParams = {}) {
   const [data, gm] = await Promise.all([
-    tmdbFetch('/discover/movie', { with_genres: genreId, sort_by: sortBy, page }),
+    tmdbFetch('/discover/movie', { sort_by: sortBy, page, ...extraParams }),
     getGenreMap(),
   ]);
   return {
@@ -194,6 +194,26 @@ export async function discoverByGenre(genreId, page = 1, sortBy = 'popularity.de
     totalPages: data.total_pages,
   };
 }
+
+// Discover movies filtered by genres with optional extra TMDB params.
+// withGenres: pipe-separated genre IDs for OR logic (e.g. "28|35")
+//             comma-separated for AND logic (e.g. "28,35")
+export async function discoverByGenres(withGenres, page = 1, sortBy = 'popularity.desc', extraParams = {}) {
+  const [data, gm] = await Promise.all([
+    tmdbFetch('/discover/movie', { with_genres: withGenres, sort_by: sortBy, page, ...extraParams }),
+    getGenreMap(),
+  ]);
+  return {
+    movies: data.results.map((m) => normalizeMovie(m, gm)),
+    page: data.page,
+    totalPages: data.total_pages,
+  };
+}
+
+// Backward-compat alias (single genre id string)
+export const discoverByGenre = (genreId, page, sortBy, extraParams) =>
+  discoverByGenres(String(genreId), page, sortBy, extraParams);
+
 
 // Movie detail (with credits)
 export async function getMovieDetail(tmdbId) {

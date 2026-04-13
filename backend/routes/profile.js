@@ -8,6 +8,7 @@ import path from 'path';
 import { v4 as uuid } from 'uuid';
 import { requireAuth, optionalAuth } from '../middleware/auth.js';
 import { User, Follow, Review, Favorite, ReviewLike, Notification } from '../models/index.js';
+import { getMovieDetail } from '../services/tmdb.js';
 
 const router = Router();
 
@@ -141,7 +142,7 @@ router.get('/:username/followers', optionalAuth, async (req, res) => {
   for (const f of follows) {
     if(!f.follower) continue;
     const u = f.follower;
-    const count = await Review.countDocuments({ user: u._id });
+    const count = await Review.countDocuments({ userId: u._id });
     let isFollowedByMe = false;
     if (req.user) {
       isFollowedByMe = !!(await Follow.exists({ follower: req.user._id, following: u._id }));
@@ -160,7 +161,7 @@ router.get('/:username/following', optionalAuth, async (req, res) => {
   for (const f of follows) {
     if(!f.following) continue;
     const u = f.following;
-    const count = await Review.countDocuments({ user: u._id });
+    const count = await Review.countDocuments({ userId: u._id });
     let isFollowedByMe = false;
     if (req.user) {
       isFollowedByMe = !!(await Follow.exists({ follower: req.user._id, following: u._id }));
@@ -168,6 +169,114 @@ router.get('/:username/following', optionalAuth, async (req, res) => {
     result.push({ id: u._id, fullName: u.fullName, username: u.username, avatarUrl: u.avatarUrl, reviewCount: count, isOwnProfile: req.user?._id.equals(u._id), isFollowedByMe });
   }
   return res.json(result);
+});
+
+router.get('/:username/activity', optionalAuth, async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username.toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const userId = user._id;
+
+    const [reviews, favorites, likes, follows] = await Promise.all([
+      Review.find({ userId }).sort({ createdAt: -1 }).limit(15).populate('userId'),
+      Favorite.find({ userId }).sort({ createdAt: -1 }).limit(15),
+      ReviewLike.find({ userId }).sort({ createdAt: -1 }).limit(15).populate({
+        path: 'reviewId',
+        populate: { path: 'userId' }
+      }),
+      Follow.find({ follower: userId }).sort({ createdAt: -1 }).limit(15).populate('following')
+    ]);
+
+    const activity = [];
+    const movieCache = new Map();
+
+    const fetchMovieInfo = async (mid) => {
+      if (movieCache.has(mid)) return movieCache.get(mid);
+      try {
+        const m = await getMovieDetail(mid);
+        const info = { title: m.title, poster: m.poster };
+        movieCache.set(mid, info);
+        return info;
+      } catch {
+        return { title: 'Unknown Movie', poster: '' };
+      }
+    };
+
+    // 1. Reviews
+    for (const r of reviews) {
+      const movie = await fetchMovieInfo(r.movieId);
+      activity.push({
+        type: 'review',
+        id: r._id,
+        timestamp: r.createdAt,
+        data: {
+          movieId: r.movieId,
+          movieTitle: movie.title,
+          moviePoster: movie.poster,
+          rating: r.rating,
+          reviewTitle: r.title,
+        }
+      });
+    }
+
+    // 2. Favorites
+    for (const f of favorites) {
+      const movie = await fetchMovieInfo(f.movieId);
+      activity.push({
+        type: 'favorite',
+        id: f._id,
+        timestamp: f.createdAt,
+        data: {
+          movieId: f.movieId,
+          movieTitle: movie.title,
+          moviePoster: movie.poster,
+        }
+      });
+    }
+
+    // 3. Likes
+    for (const l of likes) {
+      if (!l.reviewId) continue;
+      const movie = await fetchMovieInfo(l.reviewId.movieId);
+      activity.push({
+        type: 'like',
+        id: l._id,
+        timestamp: l.createdAt,
+        data: {
+          reviewId: l.reviewId._id,
+          movieId: l.reviewId.movieId,
+          movieTitle: movie.title,
+          moviePoster: movie.poster,
+          authorName: l.reviewId.userId?.username || 'unknown',
+        }
+      });
+    }
+
+    // 4. Follows
+    for (const f of follows) {
+      if (!f.following) continue;
+      activity.push({
+        type: 'follow',
+        id: f._id,
+        timestamp: f.createdAt,
+        data: {
+          userId: f.following._id,
+          username: f.following.username,
+          fullName: f.following.fullName,
+          avatarUrl: f.following.avatarUrl,
+        }
+      });
+    }
+
+    // Sort combined feed
+    activity.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    return res.json(activity.slice(0, 30));
+  } catch (err) {
+    console.error('Activity fetch error:', err);
+    return res.status(500).json({ error: 'Failed to fetch activity' });
+  }
 });
 
 export default router;

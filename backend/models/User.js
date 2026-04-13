@@ -94,7 +94,7 @@ userSchema.virtual('followingCount', {
 userSchema.virtual('reviewCount', {
   ref: 'Review',
   localField: '_id',
-  foreignField: 'user',
+  foreignField: 'userId',
   count: true,
 });
 
