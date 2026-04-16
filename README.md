@@ -60,7 +60,7 @@ Moventia/
 ### 2. Clone and Install
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Moventia/Moventia.git
 cd Moventia
 
 cd backend
@@ -115,31 +115,3 @@ npm run dev
 App URLs:
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:8080`
-
-## Available Scripts
-
-### Backend
-- `npm run start` - Start backend server
-- `npm run dev` - Start backend with watch mode
-- `npm run seed` - Seed initial/sample data
-
-### Frontend
-- `npm run dev` - Start Vite dev server
-- `npm run build` - Production build
-- `npm run preview` - Preview production build locally
-
-## Main API Route Groups
-
-- `/api/auth`
-- `/api/profile`
-- `/api/movies`
-- `/api/reviews`
-- `/api/notifications`
-- `/api/favorites`
-- `/api/chatbot`
-
-## Notes
-
-- The frontend currently targets backend API at `http://localhost:8080/api`.
-- Chatbot responses are restricted to movie/entertainment topics by design.
-- Uploaded profile files are served from `/uploads`.
