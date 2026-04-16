@@ -10,6 +10,7 @@ import { SpoilerContent } from './SpoilerContent';
 import { useParams } from 'react-router-dom';
 import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
 import { MovieCard } from './MovieCard';
+import { ReviewComments } from './ReviewComments';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -29,6 +30,9 @@ export function UserProfile({ onProfileUpdate }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [expandedComments, setExpandedComments] = useState({}); // { reviewId: boolean }
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [me, setMe] = useState(null);
 
   // ── Fetch profile on mount ─────────────────────────────────────────────────
   useEffect(() => {
@@ -110,7 +114,59 @@ export function UserProfile({ onProfileUpdate }) {
     };
 
     fetchProfile();
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+    if (token) {
+      fetch(`${API_URL}/profile/me`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => res.json())
+        .then(data => setMe(data))
+        .catch(() => {});
+    }
   }, [userId, isOwnProfile]);
+
+  const toggleComments = (reviewId) => {
+    setExpandedComments((prev) => ({
+      ...prev,
+      [reviewId]: !prev[reviewId],
+    }));
+  };
+
+  const handleLike = async (reviewId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    const review = userReviews.find((r) => r.id === reviewId);
+    if (!review) return;
+
+    try {
+      if (review.isLiked) {
+        await fetch(`${API_URL}/reviews/${reviewId}/like`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserReviews((prev) =>
+          prev.map((r) =>
+            r.id === reviewId ? { ...r, isLiked: false, likes: r.likes - 1 } : r,
+          ),
+        );
+      } else {
+        await fetch(`${API_URL}/reviews/${reviewId}/like`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserReviews((prev) =>
+          prev.map((r) =>
+            r.id === reviewId ? { ...r, isLiked: true, likes: r.likes + 1 } : r,
+          ),
+        );
+      }
+    } catch {
+      // silent
+    }
+  };
 
   // ── Follow / Unfollow ─────────────────────────────────────────────────────
   const handleFollowToggle = async () => {
@@ -232,23 +288,23 @@ export function UserProfile({ onProfileUpdate }) {
       {/* Profile Content */}
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="reviews" className="w-full">
-          <div className="flex justify-center mb-8">
-            <TabsList className="grid w-full max-w-md grid-cols-3 bg-muted rounded-full p-1 h-auto">
-              <TabsTrigger 
+          <div className="flex mb-8">
+            <TabsList className="grid w-full max-w-md grid-cols-3 nav-premium-pill p-1 h-auto">
+              <TabsTrigger
                 value="reviews"
-                className="rounded-full py-2 data-[state=active]:bg-[#c8a86d] data-[state=active]:text-[#0f0d0a] text-muted-foreground font-medium transition-all"
+                className="rounded-full py-2 text-muted-foreground font-bold transition-all"
               >
                 Reviews
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="favorites"
-                className="rounded-full py-2 data-[state=active]:bg-[#c8a86d] data-[state=active]:text-[#0f0d0a] text-muted-foreground font-medium transition-all"
+                className="rounded-full py-2 text-muted-foreground font-bold transition-all"
               >
                 Favorites
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="activity"
-                className="rounded-full py-2 data-[state=active]:bg-[#c8a86d] data-[state=active]:text-[#0f0d0a] text-muted-foreground font-medium transition-all"
+                className="rounded-full py-2 text-muted-foreground font-bold transition-all"
               >
                 Activity
               </TabsTrigger>
@@ -268,22 +324,21 @@ export function UserProfile({ onProfileUpdate }) {
                         onClick={() => navigate(`/movie/${review.movieId}`)}
                       />
                       <div className="flex-1">
-                        <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
                           <h3
                             className="text-xl font-bold cursor-pointer hover:text-primary text-foreground"
                             onClick={() => navigate(`/movie/${review.movieId}`)}
                           >
                             {review.movieTitle}
                           </h3>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-0.5">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
-                                className={`h-4 w-4 ${
-                                  i < review.rating
+                                className={`h-4 w-4 ${i < review.rating
                                     ? 'fill-yellow-400 text-yellow-400'
                                     : 'text-muted-foreground/30'
-                                }`}
+                                  }`}
                               />
                             ))}
                           </div>
@@ -292,13 +347,38 @@ export function UserProfile({ onProfileUpdate }) {
                         {review.spoiler ? (
                           <SpoilerContent>{review.content}</SpoilerContent>
                         ) : (
-                          <p className="text-muted-foreground text-sm mb-3">{review.content}</p>
+                          <p className="text-muted-foreground text-sm">{review.content}</p>
                         )}
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>{new Date(review.createdAt).toLocaleDateString()}</span>
-                          <span>{review.likes} likes</span>
-                          <span>{review.comments} comments</span>
+                        <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className={`h-8 px-2 transition-colors ${review.isLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'}`}
+                            onClick={(e) => { e.stopPropagation(); handleLike(review.id); }}
+                          >
+                            <Heart className={`h-4 w-4 mr-2 ${review.isLiked ? 'fill-current' : ''}`} />
+                            <span className="font-semibold">{review.likes}</span>
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className={`h-8 px-2 transition-colors ${expandedComments[review.id] ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                            onClick={(e) => { e.stopPropagation(); toggleComments(review.id); }}
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            <span className="font-semibold">{review.comments}</span>
+                          </Button>
                         </div>
+
+                        {expandedComments[review.id] && (
+                          <div className="mt-2">
+                            <ReviewComments
+                              reviewId={review.id}
+                              currentUser={me}
+                              isLoggedIn={isLoggedIn}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -326,9 +406,9 @@ export function UserProfile({ onProfileUpdate }) {
             {userFavorites.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 {userFavorites.map((movie) => (
-                  <MovieCard 
-                    key={movie.id} 
-                    movie={movie} 
+                  <MovieCard
+                    key={movie.id}
+                    movie={movie}
                     onClick={() => navigate(`/movie/${movie.id}`)}
                   />
                 ))}
@@ -381,16 +461,16 @@ export function UserProfile({ onProfileUpdate }) {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                          <span className="font-medium text-foreground">{isOwnProfile ? 'You ' : user.name}</span>
+                        <p className='text-sm text-foreground'>
+                          <span className="font-medium text-foreground">{isOwnProfile ? 'You' : user.name}</span>
                           <span className="text-muted-foreground">
-                            {item.type === 'review' && 'wrote a review for'}
-                            {item.type === 'favorite' && 'added to favorites'}
-                            {item.type === 'like' && 'liked a review by'}
-                            {item.type === 'follow' && 'started following'}
+                            {item.type === 'review' && ' wrote a review for '}
+                            {item.type === 'favorite' && ' added to favorites '}
+                            {item.type === 'like' && ' liked a review by '}
+                            {item.type === 'follow' && ' started following '}
                           </span>
                           {item.type === 'review' && (
-                            <span 
+                            <span
                               className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
                               onClick={() => navigate(`/movie/${item.data.movieId}`)}
                             >
@@ -398,7 +478,7 @@ export function UserProfile({ onProfileUpdate }) {
                             </span>
                           )}
                           {item.type === 'favorite' && (
-                            <span 
+                            <span
                               className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
                               onClick={() => navigate(`/movie/${item.data.movieId}`)}
                             >
@@ -407,14 +487,14 @@ export function UserProfile({ onProfileUpdate }) {
                           )}
                           {item.type === 'like' && (
                             <>
-                              <span 
+                              <span
                                 className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
                                 onClick={() => navigate(`/profile/${item.data.authorName}`)}
                               >
                                 @{item.data.authorName}
                               </span>
                               <span className="text-muted-foreground">on</span>
-                              <span 
+                              <span
                                 className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
                                 onClick={() => navigate(`/movie/${item.data.movieId}`)}
                               >
@@ -423,26 +503,27 @@ export function UserProfile({ onProfileUpdate }) {
                             </>
                           )}
                           {item.type === 'follow' && (
-                            <span 
-                               className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
-                               onClick={() => navigate(`/profile/${item.data.username}`)}
+                            <span
+                              className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors"
+                              onClick={() => navigate(`/profile/${item.data.username}`)}
                             >
                               {item.data.fullName} (@{item.data.username})
                             </span>
                           )}
-                        </div>
+                        </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(item.timestamp).toLocaleString(undefined, { 
-                            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                          {new Date(item.timestamp).toLocaleString(undefined, {
+                            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                           })}
                         </p>
                       </div>
 
+
                       {(item.type === 'review' || item.type === 'favorite' || item.type === 'like') && (
                         <div className="hidden sm:block flex-shrink-0 ml-4">
-                          <img 
-                            src={item.data.moviePoster} 
-                            alt={item.data.movieTitle} 
+                          <img
+                            src={item.data.moviePoster}
+                            alt={item.data.movieTitle}
                             className="h-12 w-8 object-cover rounded shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => navigate(`/movie/${item.data.movieId}`)}
                           />

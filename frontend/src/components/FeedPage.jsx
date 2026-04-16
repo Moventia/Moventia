@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Share2, Star } from 'lucide-react';
+import { Heart, MessageSquare, Star } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { SpoilerContent } from './SpoilerContent';
 import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
+import { ReviewComments } from './ReviewComments';
 
 const API_URL = 'http://localhost:8080/api';
 
@@ -14,17 +15,31 @@ export function FeedPage() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedScope, setFeedScope] = useState('following');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [expandedComments, setExpandedComments] = useState({}); // { reviewId: boolean }
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const fetchFeed = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_URL}/reviews/feed?scope=${feedScope}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          setReviews(await res.json());
+        setIsLoggedIn(!!token);
+
+        const [feedRes, profileRes] = await Promise.all([
+          fetch(`${API_URL}/reviews/feed?scope=${feedScope}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          token ? fetch(`${API_URL}/profile/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }) : Promise.resolve(null)
+        ]);
+
+        if (feedRes.ok) {
+          setReviews(await feedRes.json());
+        }
+        if (profileRes && profileRes.ok) {
+          setCurrentUser(await profileRes.json());
         }
       } catch {
         // silent
@@ -34,6 +49,13 @@ export function FeedPage() {
     };
     fetchFeed();
   }, [feedScope]);
+
+  const toggleComments = (reviewId) => {
+    setExpandedComments((prev) => ({
+      ...prev,
+      [reviewId]: !prev[reviewId],
+    }));
+  };
 
   const handleLike = async (reviewId) => {
     const token = localStorage.getItem('token');
@@ -117,16 +139,18 @@ export function FeedPage() {
                       <AvatarImage src={review.userAvatar} alt={review.username} />
                       <AvatarFallback>{review.username[0]}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <p 
-                        className="font-semibold cursor-pointer hover:underline text-foreground"
-                        onClick={() => navigate(`/profile/${review.username}`)}
-                      >
-                        {review.username}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        reviewed a movie • {new Date(review.createdAt).toLocaleDateString()}
-                      </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span 
+                          className="font-semibold cursor-pointer hover:underline text-foreground whitespace-nowrap"
+                          onClick={() => navigate(`/profile/${review.username}`)}
+                        >
+                          {review.username}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          reviewed a movie • {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -139,23 +163,25 @@ export function FeedPage() {
                       onClick={() => navigate(`/movie/${review.movieId}`)}
                     />
                     <div className="flex-1">
-                      <h3 
-                        className="text-xl font-bold mb-2 cursor-pointer hover:text-primary text-foreground"
-                        onClick={() => navigate(`/movie/${review.movieId}`)}
-                      >
-                        {review.movieTitle}
-                      </h3>
-                      <div className="flex items-center gap-1 mb-3">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < review.rating
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-muted-foreground/30'
-                            }`}
-                          />
-                        ))}
+                      <div className="flex items-center gap-3 mb-2 flex-wrap">
+                        <h3 
+                          className="text-xl font-bold cursor-pointer hover:text-primary text-foreground"
+                          onClick={() => navigate(`/movie/${review.movieId}`)}
+                        >
+                          {review.movieTitle}
+                        </h3>
+                        <div className="flex items-center gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < review.rating
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-muted-foreground/30'
+                              }`}
+                            />
+                          ))}
+                        </div>
                       </div>
                       <p className="font-semibold mb-2 text-foreground">{review.title}</p>
                       {review.spoiler ? (
@@ -163,28 +189,38 @@ export function FeedPage() {
                       ) : (
                         <p className="text-muted-foreground text-sm">{review.content}</p>
                       )}
-                    </div>
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 mt-4 pt-4 border-t border-border">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      className={review.isLiked ? 'text-red-500' : ''}
-                      onClick={() => handleLike(review.id)}
-                    >
-                      <Heart className={`h-4 w-4 mr-2 ${review.isLiked ? 'fill-current' : ''}`} />
-                      {review.likes}
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      {review.comments}
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Share2 className="h-4 w-4 mr-2" />
-                      Share
-                    </Button>
+                      <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 px-2 transition-colors ${review.isLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'}`}
+                          onClick={() => handleLike(review.id)}
+                        >
+                          <Heart className={`h-4 w-4 mr-2 ${review.isLiked ? 'fill-current' : ''}`} />
+                          <span className="font-semibold">{review.likes}</span>
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className={`h-8 px-2 transition-colors ${expandedComments[review.id] ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                          onClick={() => toggleComments(review.id)}
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          <span className="font-semibold">{review.comments}</span>
+                        </Button>
+                      </div>
+
+                      {expandedComments[review.id] && (
+                        <div className="mt-2">
+                          <ReviewComments
+                            reviewId={review.id}
+                            currentUser={currentUser}
+                            isLoggedIn={isLoggedIn}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

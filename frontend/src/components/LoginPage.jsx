@@ -111,10 +111,10 @@ export function LoginPage({ onLogin }) {
         }
 
         .cin-title {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 2rem;
-          font-weight: 800;
-          letter-spacing: 0.02em;
+          font-family: 'Cormorant Garamond', serif;
+          font-size: 2.5rem;
+          font-weight: 700;
+          letter-spacing: 0.1em;
           color: #f5f7fc;
           text-transform: none;
           margin: 0;
@@ -384,7 +384,7 @@ export function LoginPage({ onLogin }) {
             <div className="cin-logo-ring">
               <Film />
             </div>
-            <h1 className="cin-title">moventia</h1>
+            <h1 className="cin-title">Moventia</h1>
             <p className="cin-tagline">Your personal film journal</p>
           </div>
 
@@ -533,10 +533,7 @@ export function LoginPage({ onLogin }) {
             </div>
           </div>
 
-          {/* Footer */}
-          <p className="cin-footer">
-            By continuing you agree to our Terms of Service<br />and Privacy Policy
-          </p>
+
             <p className="cin-footer" style={{ marginTop: '0.75rem' }}>
               <button
                 onClick={() => navigate('/')}

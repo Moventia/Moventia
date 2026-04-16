@@ -153,7 +153,7 @@ export default function App() {
 
           <Route path="/notifications" element={
             <ProtectedRoute isLoggedIn={isLoggedIn} isAuthReady={isAuthReady}>
-              <NotificationsPage />
+              <NotificationsPage onRefresh={fetchNotificationCount} />
             </ProtectedRoute>
           } />
 

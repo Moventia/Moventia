@@ -14,8 +14,8 @@ router.get('/', requireAuth, async (req, res) => {
     id: n._id,
     type: n.type,
     fromUserId: n.fromUser,
-    fromUser: n.fromUserName,
-    fromAvatar: n.fromUserAvatar,
+    fromUser: n.fromUsername,
+    fromAvatar: n.fromAvatar,
     message: n.message,
     timestamp: n.createdAt,
     read: n.read

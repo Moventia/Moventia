@@ -4,7 +4,7 @@
 
 import { Router } from 'express';
 import { requireAuth, optionalAuth } from '../middleware/auth.js';
-import { User, Review, ReviewLike, Follow, Notification } from '../models/index.js';
+import { User, Review, ReviewLike, Follow, Notification, Comment } from '../models/index.js';
 import { getMovieDetail } from '../services/tmdb.js';
 
 const router = Router();
@@ -46,7 +46,7 @@ async function formatReview(review, requesterId = null) {
     content: review.content,
     spoiler: review.spoiler,
     likes: likeCount,
-    comments: 0,
+    comments: await Comment.countDocuments({ reviewId: review._id }),
     createdAt: review.createdAt,
     isLiked,
   };
@@ -85,14 +85,34 @@ router.post('/', requireAuth, async (req, res) => {
   });
   
   await review.populate('userId');
+
+  // Notify followers
+  const followers = await Follow.find({ following: req.user._id });
+  if (followers.length > 0) {
+    const notifications = followers.map(f => ({
+      user: f.follower,
+      type: 'review',
+      fromUser: req.user._id,
+      fromUsername: req.user.username,
+      fromAvatar: req.user.avatarUrl,
+      message: `posted a new review of "${movie.title}"`,
+    }));
+    await Notification.insertMany(notifications);
+  }
+
   return res.status(201).json(await formatReview(review, req.user._id));
 });
 
 // ── Recent reviews (public, for homepage) ────────────────────────────────────
 router.get('/recent', optionalAuth, async (req, res) => {
-  const recent = await Review.find().sort({ createdAt: -1 }).limit(10).populate('userId');
-  const formatted = await Promise.all(recent.map((r) => formatReview(r, req.user?._id)));
-  return res.json(formatted);
+  try {
+    const recent = await Review.find().sort({ createdAt: -1 }).limit(10).populate('userId');
+    const formatted = await Promise.all(recent.map((r) => formatReview(r, req.user?._id)));
+    return res.json(formatted);
+  } catch (err) {
+    console.error('Recent reviews error:', err);
+    return res.status(500).json({ error: 'Failed to fetch recent reviews' });
+  }
 });
 
 // ── Feed (reviews from followed users) ───────────────────────────────────────
@@ -106,22 +126,32 @@ router.get('/feed', requireAuth, async (req, res) => {
     filter = { userId: { $in: followingIds } };
   }
 
-  const feedReviews = await Review.find(filter)
-    .sort({ createdAt: -1 })
-    .populate('userId');
-    
-  const formatted = await Promise.all(feedReviews.map((r) => formatReview(r, req.user._id)));
-  return res.json(formatted);
+  try {
+    const feedReviews = await Review.find(filter)
+      .sort({ createdAt: -1 })
+      .populate('userId');
+      
+    const formatted = await Promise.all(feedReviews.map((r) => formatReview(r, req.user._id)));
+    return res.json(formatted);
+  } catch (err) {
+    console.error('Feed error:', err);
+    return res.status(500).json({ error: 'Failed to fetch feed' });
+  }
 });
 
 // ── Reviews for a movie ──────────────────────────────────────────────────────
 router.get('/movie/:movieId', optionalAuth, async (req, res) => {
-  const movieReviews = await Review.find({ movieId: req.params.movieId })
-    .sort({ createdAt: -1 })
-    .populate('userId');
-    
-  const formatted = await Promise.all(movieReviews.map((r) => formatReview(r, req.user?._id)));
-  return res.json(formatted);
+  try {
+    const movieReviews = await Review.find({ movieId: req.params.movieId })
+      .sort({ createdAt: -1 })
+      .populate('userId');
+      
+    const formatted = await Promise.all(movieReviews.map((r) => formatReview(r, req.user?._id)));
+    return res.json(formatted);
+  } catch (err) {
+    console.error('Reviews movie error:', err);
+    return res.status(500).json({ error: 'Failed to fetch reviews' });
+  }
 });
 
 // ── Reviews by a user ────────────────────────────────────────────────────────
@@ -153,8 +183,8 @@ router.post('/:id/like', requireAuth, async (req, res) => {
       user: review.userId._id,
       type: 'like',
       fromUser: req.user._id,
-      fromUserName: req.user.username,
-      fromUserAvatar: req.user.avatarUrl,
+      fromUsername: req.user.username,
+      fromAvatar: req.user.avatarUrl,
       message: `liked your review of "${movie.title}"`,
     });
   }
@@ -205,6 +235,80 @@ router.delete('/:id', requireAuth, async (req, res) => {
 router.get('/count/:movieId', async (req, res) => {
   const count = await Review.countDocuments({ movieId: req.params.movieId });
   return res.json({ count });
+});
+
+// ── GET Comments for a review ────────────────────────────────────────────────
+router.get('/:id/comments', async (req, res) => {
+  const comments = await Comment.find({ reviewId: req.params.id })
+    .sort({ createdAt: 1 })
+    .populate('userId');
+  
+  const formatted = comments.map(c => ({
+    id: c._id,
+    content: c.content,
+    createdAt: c.createdAt,
+    userId: c.userId?._id,
+    username: c.userId?.username || 'unknown',
+    userAvatar: c.userId?.avatarUrl || '',
+  }));
+  
+  return res.json(formatted);
+});
+
+// ── POST Comment on a review ─────────────────────────────────────────────────
+router.post('/:id/comments', requireAuth, async (req, res) => {
+  const { content } = req.body;
+  if (!content || !content.trim()) {
+    return res.status(400).json({ error: 'Comment content is required' });
+  }
+  if (content.length > 500) {
+    return res.status(400).json({ error: 'Comment is too long (max 500 characters)' });
+  }
+
+  const review = await Review.findById(req.params.id).populate('userId');
+  if (!review) return res.status(404).json({ error: 'Review not found' });
+
+  const comment = await Comment.create({
+    userId: req.user._id,
+    reviewId: review._id,
+    content: content.trim(),
+  });
+
+  // Notify review owner
+  if (!review.userId.equals(req.user._id)) {
+    const movie = await getMovieInfo(review.movieId);
+    await Notification.create({
+      user: review.userId._id,
+      type: 'comment',
+      fromUser: req.user._id,
+      fromUsername: req.user.username,
+      fromAvatar: req.user.avatarUrl,
+      message: `commented on your review of "${movie.title}"`,
+    });
+  }
+
+  const populated = await comment.populate('userId');
+  return res.status(201).json({
+    id: populated._id,
+    content: populated.content,
+    createdAt: populated.createdAt,
+    userId: populated.userId?._id,
+    username: populated.userId?.username || 'unknown',
+    userAvatar: populated.userId?.avatarUrl || '',
+  });
+});
+
+// ── DELETE Comment ───────────────────────────────────────────────────────────
+router.delete('/comments/:commentId', requireAuth, async (req, res) => {
+  const comment = await Comment.findById(req.params.commentId);
+  if (!comment) return res.status(404).json({ error: 'Comment not found' });
+
+  if (!comment.userId.equals(req.user._id)) {
+    return res.status(403).json({ error: 'You can only delete your own comments' });
+  }
+
+  await Comment.findByIdAndDelete(req.params.commentId);
+  return res.json({ message: 'Comment deleted' });
 });
 
 export default router;

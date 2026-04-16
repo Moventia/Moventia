@@ -543,7 +543,7 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
               {isLoggedIn ? (
                 <>
                   <Button
-                    variant="ghost"
+                    variant={location.pathname === '/notifications' ? 'default' : 'ghost'}
                     size="icon"
                     className="relative"
                     onClick={() => navigate('/notifications')}

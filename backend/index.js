@@ -10,6 +10,8 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
+dotenv.config();
+
 // Route imports
 import authRoutes from './routes/auth.js';
 import profileRoutes from './routes/profile.js';
@@ -19,7 +21,6 @@ import notificationRoutes from './routes/notifications.js';
 import chatbotRoutes from './routes/chatbot.js';
 import favoritesRoutes from './routes/favorites.js';
 
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

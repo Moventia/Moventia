@@ -119,6 +119,17 @@ router.post('/:username/follow', requireAuth, async (req, res) => {
   if (existing) return res.status(409).json({ error: 'Already following' });
   
   await Follow.create({ follower: req.user._id, following: target._id });
+
+  // Notify target user
+  await Notification.create({
+    user: target._id,
+    type: 'follow',
+    fromUser: req.user._id,
+    fromUsername: req.user.username,
+    fromAvatar: req.user.avatarUrl,
+    message: 'started following you',
+  });
+
   return res.json({ message: 'Followed successfully' });
 });
 

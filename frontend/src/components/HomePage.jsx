@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Star, TrendingUp, Clock, ChevronLeft, ChevronRight, Sparkles, Film, Users, MessageSquare, Zap } from 'lucide-react';
+import { Star, TrendingUp, Clock, ChevronLeft, ChevronRight, Sparkles, Film, Users, MessageSquare, Zap, Heart } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -125,6 +125,43 @@ export function HomePage({ isLoggedIn }) {
     };
     fetchData();
   }, [isLoggedIn]);
+
+  const handleLike = async (reviewId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    const review = recentReviews.find((r) => r.id === reviewId);
+    if (!review) return;
+
+    try {
+      if (review.isLiked) {
+        await fetch(`${API_URL}/reviews/${reviewId}/like`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setRecentReviews((prev) =>
+          prev.map((r) =>
+            r.id === reviewId ? { ...r, isLiked: false, likes: r.likes - 1 } : r,
+          ),
+        );
+      } else {
+        await fetch(`${API_URL}/reviews/${reviewId}/like`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setRecentReviews((prev) =>
+          prev.map((r) =>
+            r.id === reviewId ? { ...r, isLiked: true, likes: r.likes + 1 } : r,
+          ),
+        );
+      }
+    } catch {
+      // silent
+    }
+  };
 
   const featuredMovies = movies.slice(0, 5);
   const trendingMovies = movies.slice(0, 15);
@@ -317,7 +354,7 @@ export function HomePage({ isLoggedIn }) {
             {spotlightGenres.map(([genre, count]) => (
               <button
                 key={genre}
-                onClick={() => navigate('/browse')}
+                onClick={() => navigate(`/browse?genre=${encodeURIComponent(genre)}`)}
                 style={{
                   padding: '18px 12px',
                   borderRadius: '12px',
@@ -351,15 +388,14 @@ export function HomePage({ isLoggedIn }) {
         {/* ── New This Month ── */}
         {newReleases.length > 0 && (
           <div className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <Sparkles className="h-6 w-6 text-primary" />
-              <h2 className="text-3xl font-bold text-foreground">New This Month</h2>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-primary" />
+                <h2 className="text-3xl font-bold text-foreground">New This Month</h2>
+              </div>
+              <Button variant="outline" onClick={() => navigate('/browse')}>View All</Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newReleases.map((movie) => (
-                <MovieCard key={`new-${movie.id}`} movie={movie} onClick={() => navigate(`/movie/${movie.id}`)} />
-              ))}
-            </div>
+            <ScrollableMovieRow movies={newReleases} onMovieClick={(id) => navigate(`/movie/${id}`)} />
           </div>
         )}
 
@@ -412,20 +448,21 @@ export function HomePage({ isLoggedIn }) {
                     <div className="flex gap-4">
                       <ImageWithFallback src={review.moviePoster} alt={review.movieTitle} className="w-24 h-36 object-cover rounded shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-2">
-                          <div>
-                            <div className="flex items-center gap-2 mb-2 cursor-pointer hover:underline" onClick={() => navigate(`/profile/${review.username}`)}>
-                              <Avatar className="h-8 w-8">
-                                <AvatarImage src={review.userAvatar} alt={review.username} />
-                                <AvatarFallback>{review.username[0]}</AvatarFallback>
-                              </Avatar>
-                              <span className="font-semibold text-foreground">{review.username}</span>
-                            </div>
-                            <h3 className="text-lg font-bold cursor-pointer hover:text-primary text-foreground" onClick={() => navigate(`/movie/${review.movieId}`)}>
-                              {review.movieTitle}
-                            </h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="flex items-center gap-2 cursor-pointer hover:underline" onClick={() => navigate(`/profile/${review.username}`)}>
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={review.userAvatar} alt={review.username} />
+                              <AvatarFallback>{review.username[0]}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-semibold text-foreground">{review.username}</span>
                           </div>
-                          <div className="flex items-center gap-1 shrink-0 ml-4">
+                          <span className="text-xs text-muted-foreground">• {new Date(review.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <h3 className="text-lg font-bold cursor-pointer hover:text-primary text-foreground" onClick={() => navigate(`/movie/${review.movieId}`)}>
+                            {review.movieTitle}
+                          </h3>
+                          <div className="flex items-center gap-0.5">
                             {[...Array(5)].map((_, i) => (
                               <Star key={i} className={`h-4 w-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/30'}`} />
                             ))}
@@ -435,12 +472,27 @@ export function HomePage({ isLoggedIn }) {
                         {review.spoiler ? (
                           <SpoilerContent>{review.content}</SpoilerContent>
                         ) : (
-                          <p className="text-muted-foreground text-sm mb-3">{review.content}</p>
+                          <p className="text-muted-foreground text-sm">{review.content}</p>
                         )}
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>{new Date(review.createdAt).toLocaleDateString()}</span>
-                          <span>{review.likes} likes</span>
-                          <span>{review.comments} comments</span>
+                        <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className={`h-8 px-2 transition-colors ${review.isLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'}`}
+                            onClick={(e) => { e.stopPropagation(); handleLike(review.id); }}
+                          >
+                            <Heart className={`h-4 w-4 mr-2 ${review.isLiked ? 'fill-current' : ''}`} />
+                            <span className="font-semibold">{review.likes}</span>
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="h-8 px-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                            onClick={(e) => { e.stopPropagation(); navigate(`/movie/${review.movieId}`); }}
+                          >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            <span className="font-semibold">{review.comments}</span>
+                          </Button>
                         </div>
                       </div>
                     </div>

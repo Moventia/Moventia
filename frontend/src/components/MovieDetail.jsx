@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Star, Calendar, Clock, User as UserIcon, Heart, Share2 } from 'lucide-react';
+import { Star, Calendar, Clock, User as UserIcon, Heart, Share2, MessageSquare, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
@@ -9,8 +9,11 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { SpoilerContent } from './SpoilerContent';
 import { useParams } from 'react-router-dom';
 import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
+import { ReviewComments } from './ReviewComments';
 
 const API_URL = 'http://localhost:8080/api';
+
+
 
 export function MovieDetail({ isLoggedIn }) {
   const { id } = useParams();
@@ -23,6 +26,7 @@ export function MovieDetail({ isLoggedIn }) {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [expandedComments, setExpandedComments] = useState({}); // { reviewId: boolean }
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -34,7 +38,7 @@ export function MovieDetail({ isLoggedIn }) {
 
         const [movieRes, reviewsRes, profileRes] = await Promise.all([
           fetch(`${API_URL}/movies/${id}`),
-          fetch(`${API_URL}/reviews/movie/${id}`),
+          fetch(`${API_URL}/reviews/movie/${id}`, { headers }),
           token ? fetch(`${API_URL}/profile/me`, { headers }) : Promise.resolve(null),
         ]);
 
@@ -144,8 +148,14 @@ export function MovieDetail({ isLoggedIn }) {
         );
       }
     } catch {
-      // silent
     }
+  };
+
+  const toggleComments = (reviewId) => {
+    setExpandedComments((prev) => ({
+      ...prev,
+      [reviewId]: !prev[reviewId],
+    }));
   };
 
   if (loading) {
@@ -270,14 +280,20 @@ export function MovieDetail({ isLoggedIn }) {
                             <AvatarFallback>{review.username[0]}</AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span 
                                 className="font-semibold cursor-pointer hover:underline text-foreground"
                                 onClick={() => navigate(`/profile/${review.username}`)}
                               >
                                 {review.username}
                               </span>
-                              <div className="flex items-center gap-1">
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(review.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 mb-2 flex-wrap">
+                              <h3 className="font-semibold text-foreground">{review.title}</h3>
+                              <div className="flex items-center gap-0.5">
                                 {[...Array(5)].map((_, i) => (
                                   <Star
                                     key={i}
@@ -290,31 +306,38 @@ export function MovieDetail({ isLoggedIn }) {
                                 ))}
                               </div>
                             </div>
-                            <p className="text-sm text-muted-foreground mb-2">{new Date(review.createdAt).toLocaleDateString()}</p>
-                            <h3 className="font-semibold mb-2 text-foreground">{review.title}</h3>
                             {review.spoiler ? (
                               <SpoilerContent>{review.content}</SpoilerContent>
                             ) : (
                               <p className="text-muted-foreground">{review.content}</p>
                             )}
-                            <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+
+                            <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className={`h-8 px-2 ${review.isLiked ? 'text-red-500' : ''}`}
+                                className={`h-8 px-2 transition-colors ${review.isLiked ? 'text-red-500 hover:text-red-600' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => handleLike(review.id)}
                               >
-                                <Heart className={`h-4 w-4 mr-1 ${review.isLiked ? 'fill-current' : ''}`} />
-                                {review.likes}
+                                <Heart className={`h-4 w-4 mr-2 ${review.isLiked ? 'fill-current' : ''}`} />
+                                <span className="font-semibold">{review.likes}</span>
                               </Button>
-                              <span>{review.comments} comments</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className={`h-8 px-2 transition-colors ${expandedComments[review.id] ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                onClick={() => toggleComments(review.id)}
+                              >
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                <span className="font-semibold">{review.comments}</span>
+                              </Button>
                               
                               {currentUser && currentUser.id === review.userId && (
                                 <div className="ml-auto flex gap-2">
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
-                                    className="h-8"
+                                    className="h-8 border-foreground/10 hover:bg-foreground/5 text-xs"
                                     onClick={() => navigate(`/movie/${movie.id}/review?edit=${review.id}`)}
                                   >
                                     Edit
@@ -322,7 +345,7 @@ export function MovieDetail({ isLoggedIn }) {
                                   <Button 
                                     variant="destructive" 
                                     size="sm" 
-                                    className="h-8"
+                                    className="h-8 text-xs"
                                     onClick={() => handleDeleteReview(review.id)}
                                   >
                                     Delete
@@ -330,8 +353,19 @@ export function MovieDetail({ isLoggedIn }) {
                                 </div>
                               )}
                             </div>
+
+                            {expandedComments[review.id] && (
+                              <div className="mt-2">
+                                <ReviewComments
+                                  reviewId={review.id}
+                                  currentUser={currentUser}
+                                  isLoggedIn={isLoggedIn}
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
+
                         <Separator className="mt-6" />
                       </div>
                     ))}
