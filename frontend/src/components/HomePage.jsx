@@ -116,9 +116,13 @@ export function HomePage({ isLoggedIn }) {
           const data = await moviesRes.json();
           setMovies(data.movies || data);
         }
-        if (reviewsRes.ok) setRecentReviews(await reviewsRes.json());
+        if (reviewsRes.ok) {
+          setRecentReviews(await reviewsRes.json());
+        } else {
+          setRecentReviews([]);
+        }
       } catch {
-        // silent
+        setRecentReviews([]);
       } finally {
         setLoading(false);
       }
@@ -265,33 +269,34 @@ export function HomePage({ isLoggedIn }) {
 
         <div style={{ position: 'relative', zIndex: 10, height: '100%' }} className="container mx-auto px-4 flex items-center">
           <div
-            className="max-w-xl text-foreground"
+            className="max-w-xl"
             style={{
               opacity: isTransitioning ? 0 : 1,
               transform: isTransitioning ? 'translateY(12px)' : 'translateY(0)',
               transition: 'opacity 300ms ease, transform 300ms ease',
+              color: '#f4f6fb',
             }}
           >
-            <Badge className="mb-3 bg-primary text-primary-foreground hover:bg-primary/90">Featured</Badge>
-            <h1 className="text-5xl font-bold mb-3 leading-tight">{featuredMovie.title}</h1>
+            <Badge className="mb-3 bg-primary text-[#11131a] hover:bg-primary/90">Featured</Badge>
+            <h1 className="text-5xl font-bold mb-3 leading-tight" style={{ color: '#f4f6fb' }}>{featuredMovie.title}</h1>
             <div className="flex items-center gap-3 mb-3 flex-wrap">
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                 <span className="font-semibold text-sm">{featuredMovie.rating}</span>
               </div>
-              <span className="text-muted-foreground text-sm">{featuredMovie.year}</span>
+              <span className="text-sm" style={{ color: 'rgba(244,246,251,0.7)' }}>{featuredMovie.year}</span>
               <div className="flex gap-1 flex-wrap">
                 {featuredMovie.genre.slice(0, 3).map((g) => (
-                  <Badge key={g} variant="outline" className="border-foreground/20 text-foreground/70 text-xs">{g}</Badge>
+                  <Badge key={g} variant="outline" className="text-xs" style={{ borderColor: 'rgba(244,246,251,0.2)', color: 'rgba(244,246,251,0.7)' }}>{g}</Badge>
                 ))}
               </div>
             </div>
-            <p className="text-base mb-6 opacity-80 line-clamp-3 text-foreground/90 leading-relaxed">{featuredMovie.synopsis}</p>
+            <p className="text-base mb-6 opacity-80 line-clamp-3 leading-relaxed" style={{ color: '#e6e8ee' }}>{featuredMovie.synopsis}</p>
             <div className="flex gap-3">
-              <Button size="lg" onClick={() => navigate(`/movie/${featuredMovie.id}`)} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button size="lg" onClick={() => navigate(`/movie/${featuredMovie.id}`)} className="bg-primary hover:bg-primary/90" style={{ color: '#11131a' }}>
                 View Details
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate(`/movie/${featuredMovie.id}/review`)} className="border-foreground/25 text-foreground hover:bg-foreground/10">
+              <Button size="lg" variant="outline" onClick={() => navigate(`/movie/${featuredMovie.id}/review`)} style={{ borderColor: 'rgba(244,246,251,0.25)', color: '#f4f6fb', backgroundColor: 'transparent' }} onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(244,246,251,0.1)'} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                 Write Review
               </Button>
             </div>

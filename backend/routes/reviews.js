@@ -122,6 +122,9 @@ router.get('/feed', requireAuth, async (req, res) => {
   let filter = {};
   if (scope === 'following') {
     const follows = await Follow.find({ follower: req.user._id });
+    if (!follows || follows.length === 0) {
+      return res.json([]);
+    }
     const followingIds = follows.map(f => f.following);
     filter = { userId: { $in: followingIds } };
   }

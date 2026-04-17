@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Home, Film, User, LogOut, Search, X } from 'lucide-react';
+import { Bell, Home, Film, User, LogOut, Search, X, Sun, Moon } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { useAppNavigate as useNavigate } from '../hooks/useAppNavigate';
 import { Button } from './ui/button';
@@ -23,6 +23,30 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
   const [userSearchLoading, setUserSearchLoading] = useState(false);
   const userSearchRef = useRef(null);
   const userDebounceRef = useRef(null);
+
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    setIsDarkMode(isDark);
+
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleTheme = () => {
+    if (isDarkMode) {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    }
+  };
+
 
   // Public nav items — visible to everyone
   const publicNavItems = [
@@ -149,28 +173,38 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
         .nav-search-input-wrap {
           display: flex;
           align-items: center;
-          background: linear-gradient(135deg, rgba(8, 15, 26, 0.88), rgba(12, 22, 36, 0.76));
-          border: 1px solid rgba(203, 213, 225, 0.22);
+          background: linear-gradient(135deg, rgba(245, 245, 245, 0.9), rgba(255, 255, 255, 0.85));
+          border: 1px solid rgba(0, 0, 0, 0.1);
           border-radius: 999px;
           padding: 0 0.75rem;
           transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
           min-width: 300px;
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 20px rgba(2, 8, 20, 0.35);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 8px 20px rgba(0, 0, 0, 0.05);
           backdrop-filter: blur(8px);
+        }
+        .dark .nav-search-input-wrap {
+          background: linear-gradient(135deg, rgba(8, 15, 26, 0.88), rgba(12, 22, 36, 0.76));
+          border: 1px solid rgba(203, 213, 225, 0.22);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 20px rgba(2, 8, 20, 0.35);
         }
 
         .nav-search-input-wrap:focus-within {
           border-color: rgba(200, 168, 109, 0.52);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 3px rgba(200, 168, 109, 0.15), 0 12px 24px rgba(0, 0, 0, 0.1);
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9));
+        }
+        .dark .nav-search-input-wrap:focus-within {
           box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 0 3px rgba(200, 168, 109, 0.15), 0 12px 24px rgba(2, 8, 20, 0.4);
           background: linear-gradient(135deg, rgba(9, 16, 28, 0.94), rgba(14, 24, 40, 0.82));
         }
 
         .nav-search-icon {
-          color: #9ca7bc;
+          color: #6b7280;
           width: 14px;
           height: 14px;
           flex-shrink: 0;
         }
+        .dark .nav-search-icon { color: #9ca7bc; }
 
         .nav-search-input {
           background: transparent;
@@ -179,44 +213,52 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
           padding: 0.56rem 0.55rem;
           font-family: 'Plus Jakarta Sans', sans-serif;
           font-size: 0.82rem;
-          color: #dce1ea;
+          color: #1f2937;
           width: 100%;
           letter-spacing: 0.01em;
         }
+        .dark .nav-search-input { color: #dce1ea; }
 
         .nav-search-input::placeholder {
-          color: #8390a8;
+          color: #9ca3af;
           font-style: normal;
         }
+        .dark .nav-search-input::placeholder { color: #8390a8; }
 
         .nav-search-clear {
           background: none;
           border: none;
-          color: #8f9cb4;
+          color: #9ca3af;
           cursor: pointer;
           padding: 2px;
           display: flex;
           align-items: center;
           transition: color 0.2s;
         }
-
+        .dark .nav-search-clear { color: #8f9cb4; }
         .nav-search-clear:hover { color: #c8a86d; }
+        .dark .nav-search-clear:hover { color: #c8a86d; }
 
         .nav-search-dropdown {
           position: absolute;
           top: calc(100% + 6px);
           left: 0;
           right: 0;
-          background: linear-gradient(160deg, rgba(10, 17, 29, 0.97), rgba(11, 20, 34, 0.94));
-          border: 1px solid rgba(203, 213, 225, 0.18);
+          background: linear-gradient(160deg, rgba(255, 255, 255, 0.97), rgba(250, 250, 250, 0.95));
+          border: 1px solid rgba(0, 0, 0, 0.08);
           border-radius: 12px;
           overflow: hidden;
           z-index: 60;
-          box-shadow: 0 20px 40px rgba(2, 8, 20, 0.52);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.1);
           max-height: 320px;
           overflow-y: auto;
           animation: nav-dd-in 0.15s ease;
           backdrop-filter: blur(10px);
+        }
+        .dark .nav-search-dropdown {
+          background: linear-gradient(160deg, rgba(10, 17, 29, 0.97), rgba(11, 20, 34, 0.94));
+          border: 1px solid rgba(203, 213, 225, 0.18);
+          box-shadow: 0 20px 40px rgba(2, 8, 20, 0.52);
         }
 
         @keyframes nav-dd-in {
@@ -231,8 +273,9 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
           padding: 0.75rem 1rem;
           cursor: pointer;
           transition: background 0.15s;
-          border-bottom: 1px solid rgba(203, 213, 225, 0.08);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.04);
         }
+        .dark .nav-search-item { border-bottom: 1px solid rgba(203, 213, 225, 0.08); }
 
         .nav-search-item:last-child {
           border-bottom: none;
@@ -247,9 +290,13 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
           height: 50px;
           border-radius: 6px;
           object-fit: cover;
+          background: rgba(240, 240, 240, 0.9);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+          flex-shrink: 0;
+        }
+        .dark .nav-search-poster {
           background: rgba(14, 24, 40, 0.9);
           border: 1px solid rgba(203, 213, 225, 0.12);
-          flex-shrink: 0;
         }
 
         .nav-search-movie-info {
@@ -260,27 +307,33 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
 
         .nav-search-movie-title {
           font-size: 0.85rem;
-          color: #e6ebf5;
+          color: #1f2937;
           font-weight: 500;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
+        .dark .nav-search-movie-title { color: #e6ebf5; }
 
         .nav-search-movie-meta {
           font-size: 0.72rem;
-          color: #94a0b6;
+          color: #6b7280;
           letter-spacing: 0.02em;
         }
+        .dark .nav-search-movie-meta { color: #94a0b6; }
 
         .nav-search-avatar {
           width: 32px;
           height: 32px;
           border-radius: 50%;
           object-fit: cover;
+          background: rgba(240, 240, 240, 0.9);
+          border: 1px solid rgba(0, 0, 0, 0.05);
+          flex-shrink: 0;
+        }
+        .dark .nav-search-avatar {
           background: rgba(14, 24, 40, 0.9);
           border: 1px solid rgba(203, 213, 225, 0.14);
-          flex-shrink: 0;
         }
 
         .nav-search-avatar-fallback {
@@ -288,7 +341,7 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
           height: 32px;
           border-radius: 50%;
           background: rgba(200, 168, 109, 0.16);
-          color: #d4b57a;
+          color: #a37f48;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -296,6 +349,7 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
           font-weight: 500;
           flex-shrink: 0;
         }
+        .dark .nav-search-avatar-fallback { color: #d4b57a; }
 
         .nav-search-info {
           display: flex;
@@ -305,33 +359,37 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
 
         .nav-search-name {
           font-size: 0.85rem;
-          color: #e6ebf5;
+          color: #1f2937;
           font-weight: 500;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
+        .dark .nav-search-name { color: #e6ebf5; }
 
         .nav-search-username {
           font-size: 0.72rem;
-          color: #94a0b6;
+          color: #6b7280;
           letter-spacing: 0.03em;
         }
+        .dark .nav-search-username { color: #94a0b6; }
 
         .nav-search-empty {
           padding: 1.5rem 1rem;
           text-align: center;
-          color: #8f9cb4;
+          color: #6b7280;
           font-size: 0.8rem;
         }
+        .dark .nav-search-empty { color: #8f9cb4; }
 
         .nav-search-loading {
           padding: 1rem;
           text-align: center;
-          color: #9ca7bc;
+          color: #6b7280;
           font-size: 0.75rem;
           letter-spacing: 0.1em;
         }
+        .dark .nav-search-loading { color: #9ca7bc; }
 
         .nav-people-wrap {
           position: relative;
@@ -341,9 +399,9 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
           display: flex;
           align-items: center;
           gap: 0.35rem;
-          border: 1px solid rgba(203, 213, 225, 0.2);
-          background: linear-gradient(135deg, rgba(8, 15, 26, 0.88), rgba(12, 22, 36, 0.76));
-          color: #dce1ea;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          background: linear-gradient(135deg, rgba(245, 245, 245, 0.88), rgba(255, 255, 255, 0.76));
+          color: #1f2937;
           border-radius: 999px;
           padding: 0.45rem 0.7rem;
           font-size: 0.73rem;
@@ -351,6 +409,11 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
           text-transform: uppercase;
           cursor: pointer;
           transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .dark .nav-people-btn {
+          border: 1px solid rgba(203, 213, 225, 0.2);
+          background: linear-gradient(135deg, rgba(8, 15, 26, 0.88), rgba(12, 22, 36, 0.76));
+          color: #dce1ea;
         }
 
         .nav-people-btn:hover {
@@ -363,20 +426,26 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
           top: calc(100% + 8px);
           right: 0;
           width: 300px;
-          background: linear-gradient(160deg, rgba(10, 17, 29, 0.97), rgba(11, 20, 34, 0.94));
-          border: 1px solid rgba(203, 213, 225, 0.18);
+          background: linear-gradient(160deg, rgba(255, 255, 255, 0.97), rgba(250, 250, 250, 0.95));
+          border: 1px solid rgba(0, 0, 0, 0.08);
           border-radius: 12px;
           overflow: hidden;
           z-index: 60;
-          box-shadow: 0 20px 40px rgba(2, 8, 20, 0.52);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
           backdrop-filter: blur(10px);
           animation: nav-dd-in 0.15s ease;
+        }
+        .dark .nav-people-panel {
+          background: linear-gradient(160deg, rgba(10, 17, 29, 0.97), rgba(11, 20, 34, 0.94));
+          border: 1px solid rgba(203, 213, 225, 0.18);
+          box-shadow: 0 20px 40px rgba(2, 8, 20, 0.52);
         }
 
         .nav-people-head {
           padding: 0.65rem 0.75rem;
-          border-bottom: 1px solid rgba(203, 213, 225, 0.1);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
+        .dark .nav-people-head { border-bottom: 1px solid rgba(203, 213, 225, 0.1); }
 
         .nav-people-results {
           max-height: 280px;
@@ -398,7 +467,7 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
         }
       `}</style>
 
-      <nav className="sticky top-0 z-50 border-b border-[#1e1e1e] bg-[#0c0c0c]/95 backdrop-blur supports-[backdrop-filter]:bg-[#0c0c0c]/80">
+      <nav className="sticky top-0 z-50 border-b dark:border-[#1e1e1e] bg-[#ffffff]/95 dark:bg-[#0c0c0c]/95 backdrop-blur supports-[backdrop-filter]:bg-[#ffffff]/80 supports-[backdrop-filter]:dark:bg-[#0c0c0c]/80">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
@@ -539,6 +608,11 @@ export function Navigation({ isLoggedIn, onLogout, notificationCount = 0, user }
                   )}
                 </div>
               )}
+
+              {/* Theme Toggle */}
+              <Button variant="ghost" size="icon" onClick={toggleTheme} title="Toggle Theme" className="inline-flex">
+                {isDarkMode ? <Sun className="h-5 w-5 text-primary" /> : <Moon className="h-5 w-5 text-primary" />}
+              </Button>
 
               {isLoggedIn ? (
                 <>

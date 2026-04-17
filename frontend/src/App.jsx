@@ -78,8 +78,16 @@ export default function App() {
     }
   };
 
-  // ── On mount, restore session ─────────────────────────────────────────
+  // ── On mount, restore session and theme ──────────────────────────────
   useEffect(() => {
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+      if (!storedTheme) localStorage.setItem('theme', 'dark');
+    }
+
     const token = localStorage.getItem('token');
     if (token) {
       setIsLoggedIn(true);
