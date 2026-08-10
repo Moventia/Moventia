@@ -3,8 +3,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import mongoose from 'mongoose';
+import dns from 'node:dns';
 
 export async function connectDB() {
+  // Configure fallback DNS servers (Google / Cloudflare) to prevent querySrv ECONNREFUSED errors on Windows / local ISP DNS
+  try {
+    dns.setServers(['8.8.8.8', '1.1.1.1']);
+  } catch (dnsErr) {
+    console.warn('⚠️ Could not override DNS servers:', dnsErr.message);
+  }
+
   const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/moventia';
 
   try {
